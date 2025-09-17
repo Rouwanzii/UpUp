@@ -14,7 +14,7 @@ struct LogView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section(header: Text("Training Session")) {
+                Section() {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
 
@@ -45,13 +45,15 @@ struct LogView: View {
                             }
                         }
                     }
+                    
 
                     VStack(alignment: .leading) {
                         Text("Notes (optional)")
                         TextEditor(text: $notes)
-                            .frame(minHeight: 100)
+                            .frame(minHeight: 30)
                     }
                 }
+                .padding(.vertical,2)
 
                 Button(action: saveSession) {
                     Text("Save Session")
@@ -63,7 +65,8 @@ struct LogView: View {
                 }
                 .listRowBackground(Color.clear)
             }
-            .navigationTitle("Log Training")
+            .navigationTitle("Log Your Session")
+                
             .alert("Session Saved!", isPresented: $showingSuccessAlert) {
                 Button("OK") { clearForm() }
             }

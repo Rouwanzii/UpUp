@@ -8,7 +8,7 @@ struct HeatmapView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Month labels
+  /*          // Month labels
             HStack {
                 ForEach(monthLabels, id: \.self) { month in
                     Text(month)
@@ -16,7 +16,7 @@ struct HeatmapView: View {
                         .foregroundColor(.secondary)
                         .frame(maxWidth: .infinity)
                 }
-            }
+            }*/
 
             // Heatmap grid
             LazyVGrid(columns: columns, spacing: 2) {
@@ -71,15 +71,15 @@ struct HeatmapView: View {
 
     private var yearDates: [Date] {
         let now = Date()
-        let startOfYear = calendar.dateInterval(of: .year, for: now)?.start ?? now
-        let endOfYear = calendar.dateInterval(of: .year, for: now)?.end ?? now
+        let startOfMonth = calendar.dateInterval(of: .month, for: now)?.start ?? now
+        let endOfMonth = calendar.dateInterval(of: .month, for: now)?.end ?? now
 
         var dates: [Date] = []
-        var currentDate = startOfYear
+        var currentDate = startOfMonth
 
-        while currentDate < endOfYear {
+        while currentDate < endOfMonth {
             dates.append(currentDate)
-            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? endOfYear
+            currentDate = calendar.date(byAdding: .day, value: 1, to: currentDate) ?? endOfMonth
         }
 
         return dates

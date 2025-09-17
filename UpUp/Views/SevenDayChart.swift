@@ -4,7 +4,7 @@ struct SevenDayChart: View {
     let sessions: [ClimbingSession]
 
     var body: some View {
-        HStack(alignment: .bottom, spacing: 8) {
+        HStack(alignment: .bottom, spacing: 10) {
             ForEach(last7Days, id: \.self) { day in
                 VStack {
                     Rectangle()
@@ -19,6 +19,7 @@ struct SevenDayChart: View {
             }
         }
         .padding()
+        .padding(.horizontal,20)
         .background(Color.gray.opacity(0.05))
         .cornerRadius(10)
     }

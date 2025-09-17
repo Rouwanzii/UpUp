@@ -31,17 +31,22 @@ struct HomeView: View {
                     VStack {
                         Text("💪")
                             .font(.largeTitle)
+                            .padding(.top,20)
+                            .padding(.bottom,10)
                         Text(currentQuote)
                             .font(.headline)
-                            .multilineTextAlignment(.center)
-                            .padding()
+                            .multilineTextAlignment(.leading)
+                            .padding(.horizontal,20)
+                            .padding(.bottom,20)
                     }
+                    .frame(maxWidth: .infinity)
                     .background(Color.green.opacity(0.1))
                     .cornerRadius(15)
+                    .padding(.top,10)
                     .padding(.horizontal)
-
+                    
                     // Quick Stats
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 15) {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
                         StatCard(title: "Total Sessions", value: "\(sessions.count)", icon: "🧗‍♀️")
                         StatCard(title: "Total Hours", value: String(format: "%.1f", totalHours), icon: "⏱️")
                         StatCard(title: "This Month", value: "\(sessionsThisMonth)", icon: "📅")
@@ -54,6 +59,7 @@ struct HomeView: View {
                         Text("7-Day Activity")
                             .font(.headline)
                             .padding(.leading)
+                            //.padding(.leading)
 
                         SevenDayChart(sessions: Array(sessions))
                             .frame(height: 100)
@@ -62,7 +68,7 @@ struct HomeView: View {
 
                     // Annual Heatmap
                     VStack(alignment: .leading) {
-                        Text("Training Heatmap")
+                        Text("Monthly Training Heatmap")
                             .font(.headline)
                             .padding(.leading)
 
@@ -93,7 +99,9 @@ struct HomeView: View {
                     currentQuote = motivationalQuotes.randomElement() ?? motivationalQuotes[0]
                 }
             }
+            
         }
+        .padding(.horizontal,20)
     }
 
     private var totalHours: Double {
