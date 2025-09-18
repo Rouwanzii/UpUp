@@ -9,7 +9,7 @@ struct LogView: View {
     @State private var notes = ""
     @State private var showingSuccessAlert = false
 
-    let moods = ["😊", "💪", "🔥", "😤", "🤘", "⚡", "🚀", "😎", "🎯", "👑"]
+    let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
 
     var body: some View {
         NavigationView {

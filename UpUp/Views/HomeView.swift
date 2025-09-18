@@ -9,6 +9,7 @@ struct HomeView: View {
     private var sessions: FetchedResults<ClimbingSession>
 
     @State private var currentQuote = ""
+    @State private var currentEmoji = ""
 
     let motivationalQuotes = [
         "Every mountain top is within reach if you just keep climbing.",
@@ -22,6 +23,10 @@ struct HomeView: View {
         "Rock climbing is not just a sport, it's a way of life.",
         "The rock will always be there. The trick is to be there too."
     ]
+    
+    let motivationalEmojis = [
+        "🔥","🥰","🫡","💪","🦾","🧗"
+    ]
 
     var body: some View {
         NavigationView {
@@ -29,7 +34,7 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     // Motivational Quote
                     VStack {
-                        Text("💪")
+                        Text(currentEmoji)
                             .font(.largeTitle)
                             .padding(.top,20)
                             .padding(.bottom,10)
@@ -45,6 +50,7 @@ struct HomeView: View {
                     .padding(.top,10)
                     .padding(.horizontal)
                     
+/*
                     // Quick Stats
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
                         StatCard(title: "Total Sessions", value: "\(sessions.count)", icon: "🧗‍♀️")
@@ -53,6 +59,89 @@ struct HomeView: View {
                         StatCard(title: "This Week", value: "\(sessionsThisWeek)", icon: "📊")
                     }
                     .padding(.horizontal)
+ */
+                    
+                    // Quick Stats
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("\(sessions.count)")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                Spacer()
+                                Text("Total Sessions")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                //Text("🧗‍♀️")
+                                //    .font(.title2)
+                            }
+                        }
+                        .padding()
+                        .padding(.horizontal,10)
+                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+                        .background(Color.gray.opacity(0.05))
+                        .cornerRadius(10)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                //Text("⏱️")
+                                //    .font(.title2)
+                                Text(String(format: "%.1f", totalHours))
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                Spacer()
+                                Text("Total Hours")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                        }
+                        .padding()
+                        .padding(.horizontal,10)
+                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+                        .background(Color.gray.opacity(0.05))
+                        .cornerRadius(10)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("\(sessionsThisMonth)")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                //Text("📅")
+                                //    .font(.title2)
+                                Spacer()
+                                Text("This Month")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
+                        .padding(.horizontal,10)
+                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+                        .background(Color.gray.opacity(0.05))
+                        .cornerRadius(10)
+
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack {
+                                Text("\(sessionsThisWeek)")
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                //Text("📊")
+                                //    .font(.title2)
+                                Spacer()
+                                Text("This Week")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        .padding()
+                        .padding(.horizontal,10)
+                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+                        .background(Color.gray.opacity(0.05))
+                        .cornerRadius(10)
+                    }
+                    .padding(.horizontal)
+
 
                     // 7-Day Trend Chart
                     VStack(alignment: .leading) {
@@ -97,6 +186,9 @@ struct HomeView: View {
             .onAppear {
                 if currentQuote.isEmpty {
                     currentQuote = motivationalQuotes.randomElement() ?? motivationalQuotes[0]
+                if currentEmoji.isEmpty {
+                    currentEmoji = motivationalEmojis.randomElement() ?? motivationalEmojis[0]
+                    }
                 }
             }
             
