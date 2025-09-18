@@ -9,10 +9,10 @@ struct ContentView: View {
                     Text("Home")
                 }
 
-            LogView()
+            StatsView()
                 .tabItem {
-                    Image(systemName: "plus.circle.fill")
-                    Text("Log")
+                    Image(systemName: "chart.bar.fill")
+                    Text("Stats")
                 }
         }
         .accentColor(.green)

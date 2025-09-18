@@ -10,6 +10,8 @@ struct HomeView: View {
 
     @State private var currentQuote = ""
     @State private var currentEmoji = ""
+    @State private var showingQuickLogAlert = false
+    @State private var showingDetailedLog = false
 
     let motivationalQuotes = [
         "Every mountain top is within reach if you just keep climbing.",
@@ -49,96 +51,49 @@ struct HomeView: View {
                     .cornerRadius(15)
                     .padding(.top,10)
                     .padding(.horizontal)
-                    
-/*
-                    // Quick Stats
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
-                        StatCard(title: "Total Sessions", value: "\(sessions.count)", icon: "🧗‍♀️")
-                        StatCard(title: "Total Hours", value: String(format: "%.1f", totalHours), icon: "⏱️")
-                        StatCard(title: "This Month", value: "\(sessionsThisMonth)", icon: "📅")
-                        StatCard(title: "This Week", value: "\(sessionsThisWeek)", icon: "📊")
+
+                    // Quick Actions
+                    HStack(spacing: 12) {
+                        // Quick Log Button
+                        Button(action: quickLogOneHour) {
+                            HStack {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                Text("Quick Log")
+                                    .font(.headline)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.green)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
+
+                        // Detailed Log Button
+                        Button(action: { showingDetailedLog = true }) {
+                            HStack {
+                                Image(systemName: "pencil.circle.fill")
+                                    .font(.title2)
+                                Text("Detailed Log")
+                                    .font(.headline)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.blue)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
                     }
                     .padding(.horizontal)
- */
-                    
+
                     // Quick Stats
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("\(sessions.count)")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                Spacer()
-                                Text("Total Sessions")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                //Text("🧗‍♀️")
-                                //    .font(.title2)
-                            }
-                        }
-                        .padding()
-                        .padding(.horizontal,10)
-                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
-                        .background(Color.gray.opacity(0.05))
-                        .cornerRadius(10)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                //Text("⏱️")
-                                //    .font(.title2)
-                                Text(String(format: "%.1f", totalHours))
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                Spacer()
-                                Text("Total Hours")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-
-                        }
-                        .padding()
-                        .padding(.horizontal,10)
-                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
-                        .background(Color.gray.opacity(0.05))
-                        .cornerRadius(10)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("\(sessionsThisMonth)")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                //Text("📅")
-                                //    .font(.title2)
-                                Spacer()
-                                Text("This Month")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding()
-                        .padding(.horizontal,10)
-                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
-                        .background(Color.gray.opacity(0.05))
-                        .cornerRadius(10)
-
-                        VStack(alignment: .leading, spacing: 8) {
-                            HStack {
-                                Text("\(sessionsThisWeek)")
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                //Text("📊")
-                                //    .font(.title2)
-                                Spacer()
-                                Text("This Week")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        .padding()
-                        .padding(.horizontal,10)
-                        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
-                        .background(Color.gray.opacity(0.05))
-                        .cornerRadius(10)
+                        QuickStatCard(value: "\(sessions.count)", title: "Total Sessions")
+                        QuickStatCard(value: String(format: "%.1f", totalHours), title: "Total Hours")
+                        QuickStatCard(value: "\(sessionsThisMonth)", title: "This Month")
+                        QuickStatCard(value: "\(sessionsThisWeek)", title: "This Week")
                     }
                     .padding(.horizontal)
 
@@ -191,9 +146,33 @@ struct HomeView: View {
                     }
                 }
             }
-            
+            .alert("Session Logged!", isPresented: $showingQuickLogAlert) {
+                Button("OK") { }
+            } message: {
+                Text("Great work! Your 1-hour training session has been logged for today.")
+            }
+            .sheet(isPresented: $showingDetailedLog) {
+                LogView()
+            }
+
         }
         .padding(.horizontal,20)
+    }
+
+    private func quickLogOneHour() {
+        let newSession = ClimbingSession(context: viewContext)
+        newSession.id = UUID()
+        newSession.date = Date()
+        newSession.duration = 60 // 1 hour = 60 minutes
+        newSession.mood = "💪" // Default energetic mood for quick log
+        newSession.notes = nil
+
+        do {
+            try viewContext.save()
+            showingQuickLogAlert = true
+        } catch {
+            print("Error saving quick log session: \(error)")
+        }
     }
 
     private var totalHours: Double {
@@ -225,25 +204,26 @@ struct HomeView: View {
     }
 }
 
-struct StatCard: View {
-    let title: String
+struct QuickStatCard: View {
     let value: String
-    let icon: String
+    let title: String
 
     var body: some View {
-        VStack {
-            Text(icon)
-                .font(.title)
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.secondary)
+        VStack(alignment: .leading, spacing: 8) {
+            HStack {
+                Text(value)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                Spacer()
+                Text(title)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
-        .frame(maxWidth: .infinity)
         .padding()
-        .background(Color.gray.opacity(0.1))
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+        .background(Color.gray.opacity(0.05))
         .cornerRadius(10)
     }
 }
