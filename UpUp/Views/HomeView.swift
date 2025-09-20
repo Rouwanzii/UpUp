@@ -12,6 +12,7 @@ struct HomeView: View {
     @State private var currentEmoji = ""
     @State private var showingQuickLogAlert = false
     @State private var showingDetailedLog = false
+    @State private var showingTodayQuickLog = false
 
     let motivationalQuotes = [
         "Every mountain top is within reach if you just keep climbing.",
@@ -23,11 +24,11 @@ struct HomeView: View {
         "Climb mountains not so the world can see you, but so you can see the world.",
         "What goes up must come down. But what comes down must go up again.",
         "Rock climbing is not just a sport, it's a way of life.",
-        "The rock will always be there. The trick is to be there too."
+        "The mountains are calling and I must go.",
     ]
     
     let motivationalEmojis = [
-        "🔥","🥰","🫡","💪","🦾","🧗"
+        "🔥","🫡","💪","🦾","🧗","⛰️"
     ]
 
     var body: some View {
@@ -52,6 +53,13 @@ struct HomeView: View {
                     .padding(.top,10)
                     .padding(.horizontal)
 
+                    // Today's Training Status
+                    TodayTrainingCard(
+                        hasLoggedToday: hasLoggedToday,
+                        onQuickLog: { showingTodayQuickLog = true }
+                    )
+                    .padding(.horizontal)
+/*
                     // Quick Actions
                     HStack(spacing: 12) {
                         // Quick Log Button
@@ -87,17 +95,17 @@ struct HomeView: View {
                         }
                     }
                     .padding(.horizontal)
-
+*/
                     // Quick Stats
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
                         QuickStatCard(value: "\(sessions.count)", title: "Total Sessions")
                         QuickStatCard(value: String(format: "%.1f", totalHours), title: "Total Hours")
-                        QuickStatCard(value: "\(sessionsThisMonth)", title: "This Month")
-                        QuickStatCard(value: "\(sessionsThisWeek)", title: "This Week")
+                        QuickStatCard(value: "\(sessionsThisMonth)", title: "Sessions This Month")
+                        QuickStatCard(value: "\(sessionsThisWeek)", title: "Sessions This Week")
                     }
                     .padding(.horizontal)
 
-
+/*
                     // 7-Day Trend Chart
                     VStack(alignment: .leading) {
                         Text("7-Day Activity")
@@ -119,21 +127,20 @@ struct HomeView: View {
                         HeatmapView(sessions: Array(sessions))
                             .padding(.horizontal)
                     }
-
+ */
                     // Recent Sessions
                     VStack(alignment: .leading) {
                         Text("Recent Sessions")
                             .font(.headline)
                             .padding(.leading)
 
-                        LazyVStack {
+                        LazyVStack(spacing: 8) {
                             ForEach(Array(sessions.prefix(5)), id: \.id) { session in
-                                SessionRow(session: session)
+                                HomeSessionRow(session: session)
                             }
                         }
                         .padding(.horizontal)
                     }
-
                     Spacer()
                 }
             }
@@ -153,6 +160,9 @@ struct HomeView: View {
             }
             .sheet(isPresented: $showingDetailedLog) {
                 LogView()
+            }
+            .sheet(isPresented: $showingTodayQuickLog) {
+                TodayQuickLogView()
             }
 
         }
@@ -202,6 +212,16 @@ struct HomeView: View {
             return sessionDate >= startOfWeek
         }.count
     }
+
+    private var hasLoggedToday: Bool {
+        let calendar = Calendar.current
+        let today = Date()
+
+        return sessions.contains { session in
+            guard let sessionDate = session.date else { return false }
+            return calendar.isDate(sessionDate, inSameDayAs: today)
+        }
+    }
 }
 
 struct QuickStatCard: View {
@@ -227,6 +247,369 @@ struct QuickStatCard: View {
         .cornerRadius(10)
     }
 }
+
+struct TodayTrainingCard: View {
+    let hasLoggedToday: Bool
+    let onQuickLog: () -> Void
+
+    var body: some View {
+        VStack(spacing: 12) {
+            if hasLoggedToday {
+                HStack {
+                    Text("🎉")
+                        .font(.title)
+                    VStack(alignment: .leading) {
+                        Text("Session Completed for Today!")
+                            .font(.headline)
+                            .fontWeight(.semibold)
+                        Text("Great work on your training!")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+            } else {
+                VStack(spacing: 12) {
+                    HStack {
+                        Text("🧗")
+                            .font(.title)
+                        VStack(alignment: .leading) {
+                            Text("How are you today?")
+                                .font(.headline)
+                                .fontWeight(.semibold)
+                            Text("Ready for some climbing?")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                    }
+
+                    Button(action: onQuickLog) {
+                        HStack {
+                            Image(systemName: "plus.circle.fill")
+                            Text("Quick Log for Today")
+                                .fontWeight(.medium)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
+                }
+            }
+        }
+        .padding()
+        .background(hasLoggedToday ? Color.green.opacity(0.1) : Color.orange.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+struct TodayQuickLogView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
+    @State private var duration = "60"
+    @State private var selectedMood = "💪"
+    @State private var notes = ""
+
+    let moods = ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Quick Log for Today")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Duration")
+                        .font(.headline)
+                    HStack {
+                        TextField("Duration", text: $duration)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.numberPad)
+                        Text("minutes")
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("How was your session?")
+                        .font(.headline)
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
+                        ForEach(moods, id: \.self) { mood in
+                            Button(action: {
+                                selectedMood = mood
+                            }) {
+                                Text(mood)
+                                    .font(.title)
+                                    .frame(width: 50, height: 50)
+                                    .background(selectedMood == mood ? Color.orange.opacity(0.3) : Color.gray.opacity(0.1))
+                                    .clipShape(Circle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Notes (optional)")
+                        .font(.headline)
+                    TextEditor(text: $notes)
+                        .frame(height: 80)
+                        .padding(4)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                }
+
+                Spacer()
+
+                HStack(spacing: 12) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+
+                    Button("Save Session") {
+                        saveSession()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+            }
+            .padding()
+        }
+    }
+
+    private func saveSession() {
+        guard let durationInt = Int32(duration), durationInt > 0 else { return }
+
+        let newSession = ClimbingSession(context: viewContext)
+        newSession.id = UUID()
+        newSession.date = Date()
+        newSession.duration = durationInt
+        newSession.mood = selectedMood
+        newSession.notes = notes.isEmpty ? nil : notes
+
+        do {
+            try viewContext.save()
+            dismiss()
+        } catch {
+            print("Error saving session: \(error)")
+        }
+    }
+}
+
+struct HomeSessionRow: View {
+    let session: ClimbingSession
+    @Environment(\.managedObjectContext) private var viewContext
+    @State private var showingDeleteAlert = false
+    @State private var showingEditSheet = false
+
+    var body: some View {
+        HStack {
+            Text(session.mood ?? "😊")
+                .font(.title2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                if let notes = session.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                        .lineLimit(2)
+                }
+                HStack(alignment: .center, spacing: 6) {
+                    Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+
+                    Text("\(session.duration) minutes")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+
+            Spacer()
+        }
+        .padding()
+        .background(Color.gray.opacity(0.05))
+        .cornerRadius(8)
+        // 左滑才显示按钮
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                showingEditSheet = true
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            .tint(.blue)
+
+            Button(role: .destructive) {
+                showingDeleteAlert = true
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .alert("Delete Session", isPresented: $showingDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                deleteSession()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Are you sure you want to delete this climbing session?")
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            EditSessionView(session: session)
+        }
+    }
+
+    private func deleteSession() {
+        withAnimation {
+            viewContext.delete(session)
+            do {
+                try viewContext.save()
+            } catch {
+                print("Error deleting session: \(error)")
+            }
+        }
+    }
+}
+/*
+struct SessionRow: View {
+    let session: ClimbingSession
+
+    var body: some View {
+        HStack {
+            Text(session.mood ?? "😊")
+                .font(.title2)
+
+            VStack(alignment: .leading) {
+                Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
+                    .font(.headline)
+                Text("\(session.duration) minutes")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            if let notes = session.notes, !notes.isEmpty {
+                Image(systemName: "note.text")
+                    .foregroundColor(.secondary)
+            }
+        }
+        .padding()
+        .background(Color.gray.opacity(0.05))
+        .cornerRadius(8)
+    }
+}
+
+struct HomeSessionRow: View {
+    let session: ClimbingSession
+    @Environment(\.managedObjectContext) private var viewContext
+    @State private var showingDeleteAlert = false
+    @State private var showingEditSheet = false
+
+    var body: some View {
+        HStack {
+            Text(session.mood ?? "😊")
+                .font(.title2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                if let notes = session.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                        .lineLimit(2)
+                HStack(alignment: .center) {
+                    Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    Text("\(session.duration) minutes")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+
+                }
+            }
+
+            Spacer()
+
+            // Action buttons
+
+            HStack(spacing: 8) {
+                Button(action: { showingEditSheet = true }) {
+                    Image(systemName: "pencil")
+                        .foregroundColor(.blue)
+                        .padding(8)
+                        .background(Color.blue.opacity(0.1))
+                        .clipShape(Circle())
+                }
+
+                Button(action: { showingDeleteAlert = true }) {
+                    Image(systemName: "trash")
+                        .foregroundColor(.red)
+                        .padding(8)
+                        .background(Color.red.opacity(0.1))
+                        .clipShape(Circle())
+                }
+            }
+        }
+
+        .padding()
+        .background(Color.gray.opacity(0.05))
+        .cornerRadius(8)
+        // 左滑才显示按钮
+        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button {
+                showingEditSheet = true
+            } label: {
+                Label("Edit", systemImage: "pencil")
+            }
+            .tint(.blue)
+
+            Button(role: .destructive) {
+                showingDeleteAlert = true
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+        }
+        .alert("Delete Session", isPresented: $showingDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                deleteSession()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Are you sure you want to delete this climbing session?")
+        }
+        .sheet(isPresented: $showingEditSheet) {
+            EditSessionView(session: session)
+        }
+    }
+
+    private func deleteSession() {
+        withAnimation {
+            viewContext.delete(session)
+
+            do {
+                try viewContext.save()
+            } catch {
+                print("Error deleting session: \(error)")
+            }
+        }
+    }
+}
+
 
 struct SessionRow: View {
     let session: ClimbingSession
@@ -256,6 +639,7 @@ struct SessionRow: View {
         .cornerRadius(8)
     }
 }
+*/
 
 #Preview {
     HomeView()

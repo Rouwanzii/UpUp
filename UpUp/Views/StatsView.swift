@@ -15,10 +15,9 @@ struct StatsView: View {
             VStack {
                 // Tab picker for different views
                 Picker("Stats View", selection: $selectedTab) {
-                    Text("Recent").tag(0)
-                    Text("Weekly").tag(1)
-                    Text("Monthly").tag(2)
-                    Text("6-Month").tag(3)
+                    Text("Weekly").tag(0)
+                    Text("Monthly").tag(1)
+                    Text("Half-Year").tag(2)
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
@@ -27,15 +26,13 @@ struct StatsView: View {
                 ScrollView {
                     switch selectedTab {
                     case 0:
-                        RecentSessionsView(sessions: Array(sessions))
-                    case 1:
                         WeeklyStatsView(sessions: Array(sessions))
-                    case 2:
+                    case 1:
                         MonthlyCalendarView(sessions: Array(sessions))
-                    case 3:
+                    case 2:
                         HalfYearlyHeatmapView(sessions: Array(sessions))
                     default:
-                        RecentSessionsView(sessions: Array(sessions))
+                        WeeklyStatsView(sessions: Array(sessions))
                     }
                 }
             }
@@ -44,28 +41,6 @@ struct StatsView: View {
     }
 }
 
-struct RecentSessionsView: View {
-    let sessions: [ClimbingSession]
-    @Environment(\.managedObjectContext) private var viewContext
-    @State private var showingDeleteAlert = false
-    @State private var sessionToDelete: ClimbingSession?
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            Text("Recent Sessions")
-                .font(.title2)
-                .fontWeight(.bold)
-                .padding(.horizontal)
-
-            LazyVStack(spacing: 8) {
-                ForEach(sessions.prefix(20), id: \.id) { session in
-                    EditableSessionRow(session: session)
-                }
-            }
-            .padding(.horizontal)
-        }
-    }
-}
 
 struct EditableSessionRow: View {
     let session: ClimbingSession
@@ -132,14 +107,14 @@ struct WeeklyStatsView: View {
     let sessions: [ClimbingSession]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 20) {
             Text("Weekly Statistics")
                 .font(.title2)
                 .fontWeight(.bold)
-                .padding(.horizontal)
+                .padding(.horizontal,20)
 
             WeeklyBarChart(sessions: sessions)
-                .padding(.horizontal)
+                .padding(.horizontal,20)
         }
     }
 }

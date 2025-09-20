@@ -5,9 +5,9 @@ struct WeeklyBarChart: View {
     private let calendar = Calendar.current
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(alignment: .leading, spacing: 10) {
             // Chart
-            HStack(alignment: .bottom, spacing: 8) {
+            HStack(alignment: .bottom, spacing: 10) {
                 ForEach(weekDays, id: \.self) { day in
                     VStack(spacing: 4) {
                         // Bar
@@ -29,6 +29,7 @@ struct WeeklyBarChart: View {
                 }
             }
             .padding()
+            .padding(.horizontal, 20)
             .background(Color.gray.opacity(0.05))
             .cornerRadius(12)
 
@@ -54,6 +55,7 @@ struct WeeklyBarChart: View {
                 }
             }
             .padding()
+            .padding(.horizontal,20)
             .background(Color.green.opacity(0.1))
             .cornerRadius(10)
         }
