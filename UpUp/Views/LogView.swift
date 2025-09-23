@@ -4,7 +4,7 @@ import CoreData
 struct LogView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedDate = Date()
-    @State private var duration = ""
+    @State private var duration = "60"
     @State private var selectedMood = "😊"
     @State private var notes = ""
     @State private var showingSuccessAlert = false
@@ -17,9 +17,11 @@ struct LogView: View {
                 Section() {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
+                    
 
                     HStack {
                         Text("Duration")
+                            .bold()
                         Spacer()
                         TextField("Minutes", text: $duration)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -30,6 +32,7 @@ struct LogView: View {
 
                     VStack(alignment: .leading) {
                         Text("How was your session?")
+                            .bold()
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5)) {
                             ForEach(moods, id: \.self) { mood in
                                 Button(action: {
@@ -98,6 +101,7 @@ struct LogView: View {
         notes = ""
     }
 }
+
 
 #Preview {
     LogView()

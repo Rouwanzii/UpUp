@@ -11,6 +11,7 @@ struct EditSessionView: View {
     @State private var duration: String
     @State private var selectedMood: String
     @State private var notes: String
+    @State private var durationValue: Double = 1.0 // 默认1小时
 
     let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
 
@@ -29,8 +30,10 @@ struct EditSessionView: View {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
 
+            
                     HStack {
                         Text("Duration")
+                            .bold()
                         Spacer()
                         TextField("Minutes", text: $duration)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
@@ -38,9 +41,41 @@ struct EditSessionView: View {
                             .frame(width: 100)
                         Text("min")
                     }
+                    
+                    HStack {
+                        Text("Duration")
+                            .bold()
+                        Spacer()
+                        
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                if durationValue > 0.5 { // 最小0.5小时
+                                    durationValue -= 0.5
+                                }
+                            }) {
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            
+                            Text("\(durationValue, specifier: "%.1f") h")
+                                .frame(width: 60)
+                            
+                            Button(action: {
+                                durationValue += 0.5
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
+                    
 
                     VStack(alignment: .leading) {
                         Text("How was your session?")
+                            .bold()
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5)) {
                             ForEach(moods, id: \.self) { mood in
                                 Button(action: {
@@ -59,6 +94,7 @@ struct EditSessionView: View {
 
                     VStack(alignment: .leading) {
                         Text("Notes (optional)")
+                            .bold()
                         TextEditor(text: $notes)
                             .frame(minHeight: 30)
                     }
@@ -103,6 +139,7 @@ struct EditSessionView: View {
         }
     }
 }
+
 
 #Preview {
     let context = PersistenceController.preview.container.viewContext

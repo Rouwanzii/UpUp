@@ -13,6 +13,18 @@ struct StatsView: View {
     var body: some View {
         NavigationView {
             VStack {
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
+                        QuickStatCard(value: "\(sessions.count)", title: "Total Sessions")
+                        QuickStatCard(value: String(format: "%.1f", totalHours), title: "Total Hours")
+                    }
+                    .padding(.horizontal)
+                    .padding(.top)
+                    
+                    var totalHours: Double {
+                        sessions.reduce(0) { total, session in
+                            total + Double(session.duration) / 60.0
+                        }
+                    }
                 // Tab picker for different views
                 Picker("Stats View", selection: $selectedTab) {
                     Text("Weekly").tag(0)
@@ -21,6 +33,7 @@ struct StatsView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding()
+                
 
                 // Content based on selected tab
                 ScrollView {
@@ -37,87 +50,30 @@ struct StatsView: View {
                 }
             }
             .navigationTitle("Statistics")
+            .padding(.horizontal)
+            
         }
     }
 }
-
-
-struct EditableSessionRow: View {
-    let session: ClimbingSession
-    @Environment(\.managedObjectContext) private var viewContext
-    @State private var showingDeleteAlert = false
-    @State private var showingEditSheet = false
-
-    var body: some View {
-        HStack {
-            Text(session.mood ?? "😊")
-                .font(.title2)
-
-            VStack(alignment: .leading) {
-                Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
-                    .font(.headline)
-                Text("\(session.duration) minutes")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            if let notes = session.notes, !notes.isEmpty {
-                Image(systemName: "note.text")
-                    .foregroundColor(.secondary)
-            }
-
-            // Edit and Delete buttons
-            SessionActionButtons(
-                onEdit: { showingEditSheet = true },
-                onDelete: { showingDeleteAlert = true }
-            )
-        }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(8)
-        .alert("Delete Session", isPresented: $showingDeleteAlert) {
-            Button("Delete", role: .destructive) {
-                deleteSession()
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Are you sure you want to delete this climbing session?")
-        }
-        .sheet(isPresented: $showingEditSheet) {
-            EditSessionView(session: session)
-        }
-    }
-
-    private func deleteSession() {
-        withAnimation {
-            viewContext.delete(session)
-
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error deleting session: \(error)")
-            }
-        }
-    }
-}
-
+ 
 struct WeeklyStatsView: View {
     let sessions: [ClimbingSession]
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 16) {
             Text("Weekly Statistics")
                 .font(.title2)
                 .fontWeight(.bold)
-                .padding(.horizontal,20)
+                .padding(.horizontal)
+                .padding(.leading)
 
             WeeklyBarChart(sessions: sessions)
-                .padding(.horizontal,20)
+                .padding(.horizontal)
         }
+        
     }
 }
+    
 
 struct MonthlyCalendarView: View {
     let sessions: [ClimbingSession]
@@ -147,34 +103,11 @@ struct HalfYearlyHeatmapView: View {
 
             SixMonthHeatmap(sessions: sessions)
                 .padding(.horizontal)
+            
         }
     }
 }
 
-struct SessionActionButtons: View {
-    let onEdit: () -> Void
-    let onDelete: () -> Void
-
-    var body: some View {
-        HStack(spacing: 8) {
-            Button(action: onEdit) {
-                Image(systemName: "pencil")
-                    .foregroundColor(.blue)
-                    .padding(8)
-                    .background(Color.blue.opacity(0.1))
-                    .clipShape(Circle())
-            }
-
-            Button(action: onDelete) {
-                Image(systemName: "trash")
-                    .foregroundColor(.red)
-                    .padding(8)
-                    .background(Color.red.opacity(0.1))
-                    .clipShape(Circle())
-            }
-        }
-    }
-}
 
 #Preview {
     StatsView()

@@ -56,78 +56,21 @@ struct HomeView: View {
                     // Today's Training Status
                     TodayTrainingCard(
                         hasLoggedToday: hasLoggedToday,
-                        onQuickLog: { showingTodayQuickLog = true }
+                        onQuickLog: { showingTodayQuickLog = true}
                     )
                     .padding(.horizontal)
-/*
-                    // Quick Actions
-                    HStack(spacing: 12) {
-                        // Quick Log Button
-                        Button(action: quickLogOneHour) {
-                            HStack {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
-                                Text("Quick Log")
-                                    .font(.headline)
-                                    .fontWeight(.medium)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.green)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                        }
 
-                        // Detailed Log Button
-                        Button(action: { showingDetailedLog = true }) {
-                            HStack {
-                                Image(systemName: "pencil.circle.fill")
-                                    .font(.title2)
-                                Text("Detailed Log")
-                                    .font(.headline)
-                                    .fontWeight(.medium)
-                            }
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.blue)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                        }
-                    }
-                    .padding(.horizontal)
-*/
                     // Quick Stats
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
+                        /*
                         QuickStatCard(value: "\(sessions.count)", title: "Total Sessions")
                         QuickStatCard(value: String(format: "%.1f", totalHours), title: "Total Hours")
+                         */
                         QuickStatCard(value: "\(sessionsThisMonth)", title: "Sessions This Month")
                         QuickStatCard(value: "\(sessionsThisWeek)", title: "Sessions This Week")
                     }
                     .padding(.horizontal)
-
-/*
-                    // 7-Day Trend Chart
-                    VStack(alignment: .leading) {
-                        Text("7-Day Activity")
-                            .font(.headline)
-                            .padding(.leading)
-                            //.padding(.leading)
-
-                        SevenDayChart(sessions: Array(sessions))
-                            .frame(height: 100)
-                            .padding(.horizontal)
-                    }
-
-                    // Annual Heatmap
-                    VStack(alignment: .leading) {
-                        Text("Monthly Training Heatmap")
-                            .font(.headline)
-                            .padding(.leading)
-
-                        HeatmapView(sessions: Array(sessions))
-                            .padding(.horizontal)
-                    }
- */
+                
                     // Recent Sessions
                     VStack(alignment: .leading) {
                         Text("Recent Sessions")
@@ -142,9 +85,30 @@ struct HomeView: View {
                         .padding(.horizontal)
                     }
                     Spacer()
+                    
+                    // Quick Actions
+                    HStack(spacing: 12) {
+                        // Detailed Log Button
+                        Button(action: { showingDetailedLog = true }) {
+                            HStack {
+                                Image(systemName: "pencil.circle.fill")
+                                    .font(.title2)
+                                Text("Log History Sessions")
+                                    .font(.headline)
+                                    .fontWeight(.medium)
+                            }
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.primary)
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                        }
+                    }
+                    .padding(.horizontal)
                 }
             }
-            .navigationTitle("UpUp")
+            .navigationTitle("UpLog")
+            
             .onAppear {
                 if currentQuote.isEmpty {
                     currentQuote = motivationalQuotes.randomElement() ?? motivationalQuotes[0]
@@ -164,7 +128,6 @@ struct HomeView: View {
             .sheet(isPresented: $showingTodayQuickLog) {
                 TodayQuickLogView()
             }
-
         }
         .padding(.horizontal,20)
     }
@@ -408,6 +371,7 @@ struct TodayQuickLogView: View {
     }
 }
 
+
 struct HomeSessionRow: View {
     let session: ClimbingSession
     @Environment(\.managedObjectContext) private var viewContext
@@ -415,34 +379,35 @@ struct HomeSessionRow: View {
     @State private var showingEditSheet = false
 
     var body: some View {
-        HStack {
+        HStack(spacing: 12) {
+            // 左边 emoji 心情
             Text(session.mood ?? "😊")
                 .font(.title2)
 
-            VStack(alignment: .leading, spacing: 4) {
-                if let notes = session.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                        .lineLimit(2)
-                }
-                HStack(alignment: .center, spacing: 6) {
+            // 中间信息
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(){
+                    Text("\(session.duration) minutes")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Spacer()
                     Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
                         .font(.caption)
                         .foregroundColor(.secondary)
-
-                    Text("\(session.duration) minutes")
-                        .font(.caption)
+                }
+                    if let notes = session.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.subheadline)
                         .foregroundColor(.secondary)
+                        .lineLimit(3)
                 }
             }
-
-            Spacer()
         }
         .padding()
         .background(Color.gray.opacity(0.05))
         .cornerRadius(8)
-        // 左滑才显示按钮
+        
+        // 👇 只有左滑该行时才显示按钮
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
             Button {
                 showingEditSheet = true
@@ -610,35 +575,6 @@ struct HomeSessionRow: View {
     }
 }
 
-
-struct SessionRow: View {
-    let session: ClimbingSession
-
-    var body: some View {
-        HStack {
-            Text(session.mood ?? "😊")
-                .font(.title2)
-
-            VStack(alignment: .leading) {
-                Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
-                    .font(.headline)
-                Text("\(session.duration) minutes")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            if let notes = session.notes, !notes.isEmpty {
-                Image(systemName: "note.text")
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(8)
-    }
-}
 */
 
 #Preview {
