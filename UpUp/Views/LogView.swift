@@ -5,6 +5,7 @@ struct LogView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var selectedDate = Date()
     @State private var duration = "60"
+    @State private var durationHours: Double = 1.0
     @State private var selectedMood = "😊"
     @State private var notes = ""
     @State private var showingSuccessAlert = false
@@ -23,11 +24,32 @@ struct LogView: View {
                         Text("Duration")
                             .bold()
                         Spacer()
-                        TextField("Minutes", text: $duration)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.numberPad)
-                            .frame(width: 100)
-                        Text("min")
+
+                        HStack(spacing: 12) {
+                            Button(action: {
+                                if durationHours > 0.5 {
+                                    durationHours -= 0.5
+                                    duration = String(Int(durationHours * 60))
+                                }
+                            }) {
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+
+                            Text("\(durationHours, specifier: "%.1f") h")
+                                .frame(width: 60)
+                                .font(.headline)
+
+                            Button(action: {
+                                durationHours += 0.5
+                                duration = String(Int(durationHours * 60))
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                        }
                     }
 
                     VStack(alignment: .leading) {
@@ -62,10 +84,11 @@ struct LogView: View {
                     Text("Save Session")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.green)
+                        .background(canSave ? Color.green : Color.gray)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
+                .disabled(!canSave)
                 .listRowBackground(Color.clear)
             }
             .navigationTitle("Log Your Session")
@@ -74,6 +97,10 @@ struct LogView: View {
                 Button("OK") { clearForm() }
             }
         }
+    }
+
+    private var canSave: Bool {
+        durationHours > 0 && !selectedMood.isEmpty
     }
 
     private func saveSession() {
@@ -96,7 +123,8 @@ struct LogView: View {
 
     private func clearForm() {
         selectedDate = Date()
-        duration = ""
+        duration = "60"
+        durationHours = 1.0
         selectedMood = "😊"
         notes = ""
     }

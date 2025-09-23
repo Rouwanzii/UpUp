@@ -2,6 +2,7 @@ import SwiftUI
 
 struct MonthlyCalendar: View {
     let sessions: [ClimbingSession]
+    @Binding var selectedDate: Date
     private let calendar = Calendar.current
     @State private var currentMonth = Date()
 
@@ -45,7 +46,7 @@ struct MonthlyCalendar: View {
             // Calendar grid
             LazyVGrid(columns: columns, spacing: 8) {
                 ForEach(calendarDays, id: \.self) { date in
-                    CalendarDayView(date: date, sessions: sessions, currentMonth: currentMonth)
+                    CalendarDayView(date: date, sessions: sessions, currentMonth: currentMonth, selectedDate: $selectedDate)
                 }
             }
 
@@ -154,6 +155,7 @@ struct CalendarDayView: View {
     let date: Date
     let sessions: [ClimbingSession]
     let currentMonth: Date
+    @Binding var selectedDate: Date
     private let calendar = Calendar.current
 
     var body: some View {
@@ -169,7 +171,15 @@ struct CalendarDayView: View {
         }
         .frame(width: 40, height: 40)
         .background(isToday ? Color.blue.opacity(0.2) : Color.clear)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(calendar.isDate(date, inSameDayAs: selectedDate) ? Color.blue : Color.clear, lineWidth: 2)
+        )
         .cornerRadius(8)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            selectedDate = date
+        }
     }
 
     private var isToday: Bool {
@@ -207,6 +217,6 @@ struct CalendarDayView: View {
 }
 
 #Preview {
-    MonthlyCalendar(sessions: [])
+    MonthlyCalendar(sessions: [], selectedDate: .constant(Date()))
         .padding()
 }

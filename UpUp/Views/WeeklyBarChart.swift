@@ -2,6 +2,7 @@ import SwiftUI
 
 struct WeeklyBarChart: View {
     let sessions: [ClimbingSession]
+    @Binding var selectedDate: Date
     private let calendar = Calendar.current
 
     var body: some View {
@@ -15,21 +16,32 @@ struct WeeklyBarChart: View {
                             .fill(hoursForDay(day) > 0 ? Color.green : Color.gray.opacity(0.3))
                             .frame(width: 35, height: CGFloat(max(10, hoursForDay(day) * 20)))
                             .cornerRadius(4)
+                            .overlay(
+                                Rectangle()
+                                    .stroke(calendar.isDate(day, inSameDayAs: selectedDate) ? Color.blue : Color.clear, lineWidth: 2)
+                                    .cornerRadius(4)
+                            )
 
                         // Hours label
                         Text(String(format: "%.1f", hoursForDay(day)))
                             .font(.caption2)
-                            .foregroundColor(.secondary)
+                            .foregroundColor(calendar.isDate(day, inSameDayAs: selectedDate) ? .blue : .secondary)
 
                         // Day label
                         Text(dayLabel(for: day))
                             .font(.caption)
                             .fontWeight(.medium)
+                            .foregroundColor(calendar.isDate(day, inSameDayAs: selectedDate) ? .blue : .primary)
+                    }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        selectedDate = day
                     }
                 }
             }
             .padding()
             .padding(.horizontal, 20)
+            .padding(.top)
             .background(Color.gray.opacity(0.05))
             .cornerRadius(12)
 
@@ -111,6 +123,6 @@ struct WeeklyBarChart: View {
 }
 
 #Preview {
-    WeeklyBarChart(sessions: [])
+    WeeklyBarChart(sessions: [], selectedDate: .constant(Date()))
         .padding()
 }

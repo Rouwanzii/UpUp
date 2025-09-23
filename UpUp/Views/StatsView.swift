@@ -9,17 +9,19 @@ struct StatsView: View {
     private var sessions: FetchedResults<ClimbingSession>
 
     @State private var selectedTab = 0
+    @State private var selectedDate: Date = Date()
+    @State private var showingQuickLog = false
 
     var body: some View {
         NavigationView {
-            VStack {
+            VStack(spacing: 0) {
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
                         QuickStatCard(value: "\(sessions.count)", title: "Total Sessions")
                         QuickStatCard(value: String(format: "%.1f", totalHours), title: "Total Hours")
                     }
-                    .padding(.horizontal)
-                    .padding(.top)
-                    
+                    .padding(.horizontal, 20)
+                    .padding(.vertical)
+
                     var totalHours: Double {
                         sessions.reduce(0) { total, session in
                             total + Double(session.duration) / 60.0
@@ -29,64 +31,176 @@ struct StatsView: View {
                 Picker("Stats View", selection: $selectedTab) {
                     Text("Weekly").tag(0)
                     Text("Monthly").tag(1)
-                    Text("Half-Year").tag(2)
+                    Text("Yearly").tag(2)
                 }
                 .pickerStyle(SegmentedPickerStyle())
-                .padding()
-                
+                .padding(.horizontal, 20)
+                .padding(.bottom)
+
 
                 // Content based on selected tab
                 ScrollView {
                     switch selectedTab {
                     case 0:
-                        WeeklyStatsView(sessions: Array(sessions))
+                        WeeklyStatsView(sessions: Array(sessions), selectedDate: $selectedDate, showingQuickLog: $showingQuickLog)
                     case 1:
-                        MonthlyCalendarView(sessions: Array(sessions))
+                        MonthlyCalendarView(sessions: Array(sessions), selectedDate: $selectedDate, showingQuickLog: $showingQuickLog)
                     case 2:
                         HalfYearlyHeatmapView(sessions: Array(sessions))
                     default:
-                        WeeklyStatsView(sessions: Array(sessions))
+                        WeeklyStatsView(sessions: Array(sessions), selectedDate: $selectedDate, showingQuickLog: $showingQuickLog)
                     }
                 }
             }
             .navigationTitle("Statistics")
-            .padding(.horizontal)
-            
+            .sheet(isPresented: $showingQuickLog) {
+                QuickLogView(selectedDate: selectedDate)
+            }
         }
     }
 }
  
 struct WeeklyStatsView: View {
     let sessions: [ClimbingSession]
+    @Binding var selectedDate: Date
+    @Binding var showingQuickLog: Bool
+    private let calendar = Calendar.current
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Weekly Statistics")
+            /*Text("Weekly Statistics")
                 .font(.title2)
                 .fontWeight(.bold)
-                .padding(.horizontal)
-                .padding(.leading)
+                .padding(.horizontal, 20)*/
 
-            WeeklyBarChart(sessions: sessions)
-                .padding(.horizontal)
+            WeeklyBarChart(sessions: sessions, selectedDate: $selectedDate)
+                .padding(.horizontal, 20)
+
+            // Selected Date Session Display
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Sessions on \(selectedDateFormatted)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Spacer()
+                    if sessionsForSelectedDate.isEmpty {
+                        Button("Quick Log") {
+                            showingQuickLog = true
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.orange)
+                        .cornerRadius(8)
+                    }
+                }
+
+                if sessionsForSelectedDate.isEmpty {
+                    Text("No sessions recorded for this day")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 8)
+                } else {
+                    LazyVStack(spacing: 8) {
+                        ForEach(sessionsForSelectedDate, id: \.id) { session in
+                            SessionRowForDate(session: session)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
         }
-        
+    }
+
+    private var selectedDateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: selectedDate)
+    }
+
+    private var sessionsForSelectedDate: [ClimbingSession] {
+        return sessions.filter { session in
+            guard let sessionDate = session.date else { return false }
+            return calendar.isDate(sessionDate, inSameDayAs: selectedDate)
+        }
     }
 }
     
 
 struct MonthlyCalendarView: View {
     let sessions: [ClimbingSession]
+    @Binding var selectedDate: Date
+    @Binding var showingQuickLog: Bool
+    private let calendar = Calendar.current
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Monthly Calendar")
+            /*Text("Monthly Calendar")
                 .font(.title2)
                 .fontWeight(.bold)
-                .padding(.horizontal)
+                .padding(.horizontal, 20)*/
 
-            MonthlyCalendar(sessions: sessions)
-                .padding(.horizontal)
+            MonthlyCalendar(sessions: sessions, selectedDate: $selectedDate)
+                .padding(.horizontal, 20)
+
+            // Selected Date Session Display
+            VStack(alignment: .leading, spacing: 12) {
+                HStack {
+                    Text("Sessions on \(selectedDateFormatted)")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    Spacer()
+                    if sessionsForSelectedDate.isEmpty {
+                        Button("Quick Log") {
+                            showingQuickLog = true
+                        }
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.orange)
+                        .cornerRadius(8)
+                    }
+                }
+
+                if sessionsForSelectedDate.isEmpty {
+                    Text("No sessions recorded for this day")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 8)
+                } else {
+                    LazyVStack(spacing: 8) {
+                        ForEach(sessionsForSelectedDate, id: \.id) { session in
+                            SessionRowForDate(session: session)
+                        }
+                    }
+                }
+            }
+            .padding(.horizontal, 20)
+            .padding(.vertical, 16)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
+        }
+    }
+
+    private var selectedDateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: selectedDate)
+    }
+
+    private var sessionsForSelectedDate: [ClimbingSession] {
+        return sessions.filter { session in
+            guard let sessionDate = session.date else { return false }
+            return calendar.isDate(sessionDate, inSameDayAs: selectedDate)
         }
     }
 }
@@ -96,18 +210,318 @@ struct HalfYearlyHeatmapView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("6-Month Activity Heatmap")
+            // Monthly Chart Section
+            /*Text("Monthly Overview")
                 .font(.title2)
                 .fontWeight(.bold)
-                .padding(.horizontal)
+                .padding(.horizontal, 20)
+                .padding(.top, 24)*/
 
-            SixMonthHeatmap(sessions: sessions)
-                .padding(.horizontal)
+            MonthlyChart(sessions: sessions)
+                .padding(.horizontal, 20)
+                .padding(.bottom)
             
+            VStack(alignment: .leading, spacing: 12) {
+                Text("6-Month Activity Heatmap")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .padding(.horizontal, 20)
+                SixMonthHeatmap(sessions: sessions)
+                    
+            }
+            .padding(.horizontal, 20)
+            //.padding(.vertical, 16)
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(12)
+            //.padding(.horizontal, 20)
         }
     }
 }
 
+
+struct SessionRowForDate: View {
+    let session: ClimbingSession
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(session.mood ?? "😊")
+                .font(.title2)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("\(session.duration) minutes")
+                        .font(.headline)
+                        .fontWeight(.medium)
+                
+                if let notes = session.notes, !notes.isEmpty {
+                    Text(notes)
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .lineLimit(10)
+                }
+            }
+            Spacer()
+        }
+        .padding()
+        .background(Color.white)
+        .cornerRadius(8)
+        //.shadow(color: .gray.opacity(0.1), radius: 2, x: 0, y: 1)
+    }
+}
+
+struct QuickLogView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
+    let selectedDate: Date
+    @State private var duration = "60"
+    @State private var selectedMood = "💪"
+    @State private var notes = ""
+
+    let moods = ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Quick Log for \(dateFormatted)")
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .padding(.top)
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Duration")
+                        .font(.headline)
+                    HStack {
+                        TextField("Duration", text: $duration)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .keyboardType(.numberPad)
+                        Text("minutes")
+                            .foregroundColor(.secondary)
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("How was your session?")
+                        .font(.headline)
+                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
+                        ForEach(moods, id: \.self) { mood in
+                            Button(action: {
+                                selectedMood = mood
+                            }) {
+                                Text(mood)
+                                    .font(.title)
+                                    .frame(width: 50, height: 50)
+                                    .background(selectedMood == mood ? Color.orange.opacity(0.3) : Color.gray.opacity(0.1))
+                                    .clipShape(Circle())
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                        }
+                    }
+                }
+
+                VStack(alignment: .leading, spacing: 12) {
+                    Text("Notes (optional)")
+                        .font(.headline)
+                    TextEditor(text: $notes)
+                        .frame(height: 80)
+                        .padding(4)
+                        .background(Color.gray.opacity(0.1))
+                        .cornerRadius(8)
+                }
+
+                Spacer()
+
+                HStack(spacing: 12) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.gray.opacity(0.2))
+                    .foregroundColor(.primary)
+                    .cornerRadius(10)
+
+                    Button("Save Session") {
+                        saveSession()
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
+                }
+            }
+            .padding()
+        }
+    }
+
+    private var dateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: selectedDate)
+    }
+
+    private func saveSession() {
+        guard let durationInt = Int32(duration), durationInt > 0 else { return }
+
+        let newSession = ClimbingSession(context: viewContext)
+        newSession.id = UUID()
+        newSession.date = selectedDate
+        newSession.duration = durationInt
+        newSession.mood = selectedMood
+        newSession.notes = notes.isEmpty ? nil : notes
+
+        do {
+            try viewContext.save()
+            dismiss()
+        } catch {
+            print("Error saving session: \(error)")
+        }
+    }
+}
+
+struct MonthlyChart: View {
+    let sessions: [ClimbingSession]
+    private let calendar = Calendar.current
+
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false){
+            VStack(alignment: .leading, spacing: 10) {
+                // Chart
+                HStack(alignment: .bottom, spacing: 10) {
+                    ForEach(monthlyData, id: \.month) { data in
+                        VStack(spacing: 4) {
+                            // Hours bar
+                            Rectangle()
+                                .fill(data.hours > 0 ? Color.green.opacity(0.7) : Color.gray.opacity(0.3))
+                                .frame(width: 30, height: CGFloat(max(10, data.hours * 5)))
+                                .cornerRadius(2)
+                                .overlay(
+                                    // 高亮当前月份
+                                    RoundedRectangle(cornerRadius: 4)
+                                        .stroke(Color.blue, lineWidth: Calendar.current.component(.month, from: Date()) == data.month ? 1 : 0)
+                                )
+                                .padding(.top)
+                                
+                            
+                            // Hours label
+                            Text(String(format: "%.1f", data.hours))
+                                .font(.caption2)
+                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .secondary)
+                            
+                            // Month label
+                            Text(data.monthLabel)
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                                .rotationEffect(.degrees(0))
+                                .frame(width: 30)
+                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .primary)
+                        }
+                    }
+                }}
+            .padding()
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(12)
+
+            // Legend
+            HStack(spacing: 16) {
+                HStack(spacing: 4) {
+                    Rectangle()
+                        .fill(Color.green.opacity(0.7))
+                        .frame(width: 12, height: 12)
+                        .cornerRadius(2)
+                    Text("Hours")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                Spacer()
+            }
+            
+        }
+        ScrollView(.horizontal, showsIndicators: false){
+            VStack(alignment: .leading, spacing: 10) {
+                // Chart
+                HStack(alignment: .bottom, spacing: 10) {
+                    ForEach(monthlyData, id: \.month) { data in
+                        VStack(spacing: 4) {
+                              // Sessions bar
+                             Rectangle()
+                                .fill(data.sessions > 0 ? Color.blue.opacity(0.7): Color.gray.opacity(0.3))
+                             .frame(width: 30, height: CGFloat(max(10, data.sessions * 10)))
+                             .cornerRadius(2)
+                             .overlay(
+                                 // 高亮当前月份
+                                 RoundedRectangle(cornerRadius: 4)
+                                     .stroke(Color.blue, lineWidth: Calendar.current.component(.month, from: Date()) == data.month ? 1 : 0)
+                             )
+                             .padding(.top)
+                            
+                            // Hours label
+                            Text(String(format: "%.f", data.hours))
+                                .font(.caption2)
+                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .secondary)
+                            
+                            
+                            // Month label
+                            Text(data.monthLabel)
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                                .rotationEffect(.degrees(0))
+                                .frame(width: 30)
+                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .primary)
+                        }
+                    }
+                }}
+            .padding()
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(12)
+
+            // Legend
+            HStack(spacing: 16) {
+                HStack(spacing: 4) {
+                    Rectangle()
+                        .fill(Color.blue.opacity(0.7))
+                        .frame(width: 12, height: 12)
+                        .cornerRadius(2)
+                    Text("Sessions")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                .padding(.horizontal)
+                Spacer()
+            }
+            
+        }
+        
+    }
+
+    private var monthlyData: [(month: Int, sessions: Int, hours: Double, monthLabel: String)] {
+        let currentYear = calendar.component(.year, from: Date())
+        var data: [(Int, Int, Double, String)] = []
+
+        for month in 1...12 {
+            let sessionsInMonth = sessions.filter { session in
+                guard let sessionDate = session.date else { return false }
+                let sessionYear = calendar.component(.year, from: sessionDate)
+                let sessionMonth = calendar.component(.month, from: sessionDate)
+                return sessionYear == currentYear && sessionMonth == month
+            }
+
+            let sessionCount = sessionsInMonth.count
+            let totalHours = sessionsInMonth.reduce(0.0) { total, session in
+                total + Double(session.duration) / 60.0
+            }
+
+            let monthFormatter = DateFormatter()
+            monthFormatter.dateFormat = "MMM"
+            let monthDate = calendar.date(from: DateComponents(year: currentYear, month: month, day: 1)) ?? Date()
+            let monthLabel = monthFormatter.string(from: monthDate)
+
+            data.append((month, sessionCount, totalHours, monthLabel))
+        }
+
+        return data
+    }
+}
 
 #Preview {
     StatsView()

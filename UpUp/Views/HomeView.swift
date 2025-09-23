@@ -51,14 +51,14 @@ struct HomeView: View {
                     .background(Color.green.opacity(0.1))
                     .cornerRadius(15)
                     .padding(.top,10)
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
 
                     // Today's Training Status
                     TodayTrainingCard(
                         hasLoggedToday: hasLoggedToday,
                         onQuickLog: { showingTodayQuickLog = true}
                     )
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
 
                     // Quick Stats
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
@@ -69,20 +69,20 @@ struct HomeView: View {
                         QuickStatCard(value: "\(sessionsThisMonth)", title: "Sessions This Month")
                         QuickStatCard(value: "\(sessionsThisWeek)", title: "Sessions This Week")
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
                 
                     // Recent Sessions
                     VStack(alignment: .leading) {
                         Text("Recent Sessions")
                             .font(.headline)
-                            .padding(.leading)
+                            .padding(.leading, 20)
 
                         LazyVStack(spacing: 8) {
                             ForEach(Array(sessions.prefix(5)), id: \.id) { session in
                                 HomeSessionRow(session: session)
                             }
                         }
-                        .padding(.horizontal)
+                        .padding(.horizontal, 20)
                     }
                     Spacer()
                     
@@ -104,11 +104,11 @@ struct HomeView: View {
                             .cornerRadius(12)
                         }
                     }
-                    .padding(.horizontal)
+                    .padding(.horizontal, 20)
                 }
             }
             .navigationTitle("UpLog")
-            
+
             .onAppear {
                 if currentQuote.isEmpty {
                     currentQuote = motivationalQuotes.randomElement() ?? motivationalQuotes[0]
@@ -129,7 +129,6 @@ struct HomeView: View {
                 TodayQuickLogView()
             }
         }
-        .padding(.horizontal,20)
     }
 
     private func quickLogOneHour() {
@@ -205,7 +204,7 @@ struct QuickStatCard: View {
         }
         .padding()
         .padding(.horizontal, 10)
-        .frame(maxWidth: .infinity, minHeight: 50, alignment: .leading)
+        .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
         .background(Color.gray.opacity(0.05))
         .cornerRadius(10)
     }

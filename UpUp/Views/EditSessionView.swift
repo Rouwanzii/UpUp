@@ -11,7 +11,7 @@ struct EditSessionView: View {
     @State private var duration: String
     @State private var selectedMood: String
     @State private var notes: String
-    @State private var durationValue: Double = 1.0 // 默认1小时
+    @State private var durationHours: Double
 
     let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
 
@@ -21,6 +21,7 @@ struct EditSessionView: View {
         self._duration = State(initialValue: String(session.duration))
         self._selectedMood = State(initialValue: session.mood ?? "😊")
         self._notes = State(initialValue: session.notes ?? "")
+        self._durationHours = State(initialValue: Double(session.duration) / 60.0)
     }
 
     var body: some View {
@@ -30,39 +31,30 @@ struct EditSessionView: View {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
 
-            
                     HStack {
                         Text("Duration")
                             .bold()
                         Spacer()
-                        TextField("Minutes", text: $duration)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.numberPad)
-                            .frame(width: 100)
-                        Text("min")
-                    }
-                    
-                    HStack {
-                        Text("Duration")
-                            .bold()
-                        Spacer()
-                        
+
                         HStack(spacing: 12) {
                             Button(action: {
-                                if durationValue > 0.5 { // 最小0.5小时
-                                    durationValue -= 0.5
+                                if durationHours > 0.5 {
+                                    durationHours -= 0.5
+                                    duration = String(Int(durationHours * 60))
                                 }
                             }) {
                                 Image(systemName: "minus.circle.fill")
                                     .font(.title2)
                                     .foregroundColor(.blue)
                             }
-                            
-                            Text("\(durationValue, specifier: "%.1f") h")
+
+                            Text("\(durationHours, specifier: "%.1f") h")
                                 .frame(width: 60)
-                            
+                                .font(.headline)
+
                             Button(action: {
-                                durationValue += 0.5
+                                durationHours += 0.5
+                                duration = String(Int(durationHours * 60))
                             }) {
                                 Image(systemName: "plus.circle.fill")
                                     .font(.title2)
@@ -70,7 +62,6 @@ struct EditSessionView: View {
                             }
                         }
                     }
-                    .padding(.vertical, 4)
                     
 
                     VStack(alignment: .leading) {
@@ -105,10 +96,11 @@ struct EditSessionView: View {
                     Text("Save Changes")
                         .frame(maxWidth: .infinity)
                         .padding()
-                        .background(Color.green)
+                        .background(canSave ? Color.green : Color.gray)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
+                .disabled(!canSave)
                 .listRowBackground(Color.clear)
             }
             .navigationTitle("Edit Session")
@@ -121,6 +113,10 @@ struct EditSessionView: View {
                 }
             }
         }
+    }
+
+    private var canSave: Bool {
+        durationHours > 0 && !selectedMood.isEmpty
     }
 
     private func saveChanges() {
