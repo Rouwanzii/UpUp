@@ -36,10 +36,11 @@ struct LogView: View {
                                     .font(.title2)
                                     .foregroundColor(.blue)
                             }
+                            .buttonStyle(PlainButtonStyle())
 
                             Text("\(durationHours, specifier: "%.1f") h")
                                 .frame(width: 60)
-                                .font(.headline)
+                                //.font(.subheadline)
 
                             Button(action: {
                                 durationHours += 0.5
@@ -49,6 +50,7 @@ struct LogView: View {
                                     .font(.title2)
                                     .foregroundColor(.blue)
                             }
+                            .buttonStyle(PlainButtonStyle())
                         }
                     }
 

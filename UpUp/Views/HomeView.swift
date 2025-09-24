@@ -25,6 +25,16 @@ struct HomeView: View {
         "What goes up must come down. But what comes down must go up again.",
         "Rock climbing is not just a sport, it's a way of life.",
         "The mountains are calling and I must go.",
+        "Because in the end, you won’t remember the time you spent working in an office or mowing the lawn. Climb that goddamn mountain.",
+        "Today is your day! Your mountain is waiting, So… get on your way!",
+        "The world is big, and I want to have a good look at it before it gets dark.",
+        "we go out because it is our nature to go out",
+        "Getting to the top is optional. Getting down is mandatory.",
+        "If you think you've peaked, find a new mountain.",
+        "Even a bad day of climbing is better than a good day at work.",
+        "We should be less afraid to be afraid.",
+        "Dare to live the dreams you have dreamed for yourself."
+        
     ]
     
     let motivationalEmojis = [
@@ -43,6 +53,7 @@ struct HomeView: View {
                             .padding(.bottom,10)
                         Text(currentQuote)
                             .font(.headline)
+                            .italic()
                             .multilineTextAlignment(.leading)
                             .padding(.horizontal,20)
                             .padding(.bottom,20)
@@ -77,11 +88,16 @@ struct HomeView: View {
                             .font(.headline)
                             .padding(.leading, 20)
 
-                        LazyVStack(spacing: 8) {
+                        List {
                             ForEach(Array(sessions.prefix(5)), id: \.id) { session in
                                 HomeSessionRow(session: session)
+                                    .listRowInsets(EdgeInsets())
+                                    .listRowSeparator(.hidden)
+                                    .listRowBackground(Color.clear)
                             }
                         }
+                        .listStyle(PlainListStyle())
+                        .frame(height: CGFloat(min(sessions.prefix(5).count, 5)) * 80)
                         .padding(.horizontal, 20)
                     }
                     Spacer()
@@ -408,18 +424,18 @@ struct HomeSessionRow: View {
         
         // 👇 只有左滑该行时才显示按钮
         .swipeActions(edge: .trailing, allowsFullSwipe: false) {
+            Button(role: .destructive) {
+                showingDeleteAlert = true
+            } label: {
+                Label("Delete", systemImage: "trash")
+            }
+            
             Button {
                 showingEditSheet = true
             } label: {
                 Label("Edit", systemImage: "pencil")
             }
             .tint(.blue)
-
-            Button(role: .destructive) {
-                showingDeleteAlert = true
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
         }
         .alert("Delete Session", isPresented: $showingDeleteAlert) {
             Button("Delete", role: .destructive) {
