@@ -9,13 +9,13 @@ struct LogView: View {
     @State private var selectedMood = "😊"
     @State private var notes = ""
     @State private var showingSuccessAlert = false
+    @State private var routes: [ClimbingRoute] = [ClimbingRoute()]
 
     let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
 
     var body: some View {
         NavigationView {
             Form {
-                Section() {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
                     
@@ -72,16 +72,17 @@ struct LogView: View {
                             }
                         }
                     }
-                    
+                
 
-                    VStack(alignment: .leading) {
-                        Text("Notes (optional)")
-                        TextEditor(text: $notes)
-                            .frame(minHeight: 30)
-                    }
+                RoutesSection(routes: $routes)
+
+                VStack(alignment: .leading) {
+                    Text("Notes (optional)")
+                        .bold()
+                    TextEditor(text: $notes)
+                        .frame(minHeight: 30)
                 }
-                .padding(.vertical,2)
-
+                
                 Button(action: saveSession) {
                     Text("Save Session")
                         .frame(maxWidth: .infinity)
@@ -114,6 +115,7 @@ struct LogView: View {
         newSession.duration = durationInt
         newSession.mood = selectedMood
         newSession.notes = notes.isEmpty ? nil : notes
+        newSession.routes = routes
 
         do {
             try viewContext.save()
@@ -129,6 +131,7 @@ struct LogView: View {
         durationHours = 1.0
         selectedMood = "😊"
         notes = ""
+        routes = [ClimbingRoute()]
     }
 }
 

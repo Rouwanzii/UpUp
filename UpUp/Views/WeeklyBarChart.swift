@@ -3,6 +3,7 @@ import SwiftUI
 struct WeeklyBarChart: View {
     let sessions: [ClimbingSession]
     @Binding var selectedDate: Date
+    @State private var currentWeekOffset: Int = 0
     private let calendar = Calendar.current
 
     var body: some View {
@@ -48,11 +49,9 @@ struct WeeklyBarChart: View {
             // Summary
             HStack {
                 VStack(alignment: .leading) {
-                    Text("This Week")
-                        .font(.headline)
                     Text("\(sessionsThisWeek) sessions")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(.headline)
+                        //.foregroundColor(.secondary)
                 }
 
                 Spacer()
@@ -60,22 +59,54 @@ struct WeeklyBarChart: View {
                 VStack(alignment: .trailing) {
                     Text(String(format: "%.1f hrs", totalHoursThisWeek))
                         .font(.headline)
-                        .fontWeight(.bold)
+                        //.fontWeight(.bold)
+                    /*
                     Text("total time")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                     */
                 }
             }
             .padding()
             .padding(.horizontal,20)
             .background(Color.green.opacity(0.1))
             .cornerRadius(10)
+            .gesture(
+                DragGesture()
+                    .onEnded { value in
+                        if value.translation.width > 50 {
+                            // Swipe right - go to previous week
+                            withAnimation {
+                                currentWeekOffset -= 1
+                                // Update selectedDate to the same day of week in the new week
+                                let dayOfWeek = calendar.component(.weekday, from: selectedDate)
+                                if let newWeekFirstDay = calendar.date(byAdding: .weekOfYear, value: currentWeekOffset, to: Date()),
+                                   let newWeekStart = calendar.dateInterval(of: .weekOfYear, for: newWeekFirstDay)?.start,
+                                   let newSelectedDate = calendar.date(byAdding: .day, value: dayOfWeek - 1, to: newWeekStart) {
+                                    selectedDate = newSelectedDate
+                                }
+                            }
+                        } else if value.translation.width < -50 {
+                            // Swipe left - go to next week
+                            withAnimation {
+                                currentWeekOffset += 1
+                                // Update selectedDate to the same day of week in the new week
+                                let dayOfWeek = calendar.component(.weekday, from: selectedDate)
+                                if let newWeekFirstDay = calendar.date(byAdding: .weekOfYear, value: currentWeekOffset, to: Date()),
+                                   let newWeekStart = calendar.dateInterval(of: .weekOfYear, for: newWeekFirstDay)?.start,
+                                   let newSelectedDate = calendar.date(byAdding: .day, value: dayOfWeek - 1, to: newWeekStart) {
+                                    selectedDate = newSelectedDate
+                                }
+                            }
+                        }
+                    }
+            )
         }
     }
 
     private var weekDays: [Date] {
-        let today = Date()
-        let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: today)?.start ?? today
+        let referenceDate = calendar.date(byAdding: .weekOfYear, value: currentWeekOffset, to: Date()) ?? Date()
+        let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: referenceDate)?.start ?? referenceDate
 
         return (0..<7).compactMap { dayOffset in
             calendar.date(byAdding: .day, value: dayOffset, to: startOfWeek)
@@ -99,22 +130,24 @@ struct WeeklyBarChart: View {
     }
 
     private var sessionsThisWeek: Int {
-        let today = Date()
-        let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: today)?.start ?? today
+        let referenceDate = calendar.date(byAdding: .weekOfYear, value: currentWeekOffset, to: Date()) ?? Date()
+        let weekInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate)
+        guard let startOfWeek = weekInterval?.start, let endOfWeek = weekInterval?.end else { return 0 }
 
         return sessions.filter { session in
             guard let sessionDate = session.date else { return false }
-            return sessionDate >= startOfWeek
+            return sessionDate >= startOfWeek && sessionDate < endOfWeek
         }.count
     }
 
     private var totalHoursThisWeek: Double {
-        let today = Date()
-        let startOfWeek = calendar.dateInterval(of: .weekOfYear, for: today)?.start ?? today
+        let referenceDate = calendar.date(byAdding: .weekOfYear, value: currentWeekOffset, to: Date()) ?? Date()
+        let weekInterval = calendar.dateInterval(of: .weekOfYear, for: referenceDate)
+        guard let startOfWeek = weekInterval?.start, let endOfWeek = weekInterval?.end else { return 0 }
 
         let sessionsThisWeek = sessions.filter { session in
             guard let sessionDate = session.date else { return false }
-            return sessionDate >= startOfWeek
+            return sessionDate >= startOfWeek && sessionDate < endOfWeek
         }
 
         let totalMinutes = sessionsThisWeek.reduce(0) { $0 + Int($1.duration) }

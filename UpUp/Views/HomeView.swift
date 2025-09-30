@@ -47,16 +47,19 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     // Motivational Quote
                     VStack {
+                        /*
                         Text(currentEmoji)
-                            .font(.largeTitle)
+                            .font(.headline)
                             .padding(.top,20)
                             .padding(.bottom,10)
+                         */
                         Text(currentQuote)
-                            .font(.headline)
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                             .italic()
                             .multilineTextAlignment(.leading)
                             .padding(.horizontal,20)
-                            .padding(.bottom,20)
+                            .padding(.vertical,20)
                     }
                     .frame(maxWidth: .infinity)
                     .background(Color.green.opacity(0.1))
@@ -67,10 +70,10 @@ struct HomeView: View {
                     // Today's Training Status
                     TodayTrainingCard(
                         hasLoggedToday: hasLoggedToday,
-                        onQuickLog: { showingTodayQuickLog = true}
+                        onQuickLog: {showingTodayQuickLog = true}
                     )
                     .padding(.horizontal, 20)
-
+/*
                     // Quick Stats
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
                         /*
@@ -81,30 +84,34 @@ struct HomeView: View {
                         QuickStatCard(value: "\(sessionsThisWeek)", title: "Sessions This Week")
                     }
                     .padding(.horizontal, 20)
-                
+ */
+                    
                     // Recent Sessions
-                    VStack(alignment: .leading) {
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("Recent Sessions")
                             .font(.headline)
                             .padding(.leading, 20)
 
-                        List {
-                            ForEach(Array(sessions.prefix(5)), id: \.id) { session in
-                                HomeSessionRow(session: session)
-                                    .listRowInsets(EdgeInsets())
-                                    .listRowSeparator(.hidden)
-                                    .listRowBackground(Color.clear)
+                        // iOS Notes-style list with auto height
+                        VStack(spacing: 0) {
+                            List {
+                                ForEach(Array(sessions.prefix(50)), id: \.id) { session in
+                                    HomeSessionRow(session: session)
+                                        .listRowInsets(EdgeInsets(top: 4, leading: 0, bottom: 4, trailing: 0))
+                                        .listRowSeparator(.hidden)
+                                        .listRowBackground(Color.clear)
+                                }
                             }
+                            .listStyle(PlainListStyle())
+                            .scrollDisabled(true) // Disable list scrolling
+                            .frame(height: CGFloat(min(sessions.count, 50)) * 100) // Auto height based on content with more room per row
                         }
-                        .listStyle(PlainListStyle())
-                        .frame(height: CGFloat(min(sessions.prefix(5).count, 5)) * 80)
                         .padding(.horizontal, 20)
                     }
-                    Spacer()
+                    //Spacer()
                     
                     // Quick Actions
                     HStack(spacing: 12) {
-                        // Detailed Log Button
                         Button(action: { showingDetailedLog = true }) {
                             HStack {
                                 Image(systemName: "pencil.circle.fill")
@@ -115,8 +122,8 @@ struct HomeView: View {
                             }
                             .frame(maxWidth: .infinity)
                             .padding()
-                            .background(Color.primary)
-                            .foregroundColor(.white)
+                            .background(Color(UIColor.systemTeal))
+                            .foregroundColor(Color(UIColor.systemBackground))
                             .cornerRadius(12)
                         }
                     }
@@ -227,8 +234,13 @@ struct QuickStatCard: View {
 }
 
 struct TodayTrainingCard: View {
+    @State private var currentEmoji = ""
+    
     let hasLoggedToday: Bool
     let onQuickLog: () -> Void
+    let motivationalEmojis = [
+        "🔥","🫡","💪","🦾","🧗","⛰️"
+    ]
 
     var body: some View {
         VStack(spacing: 12) {
@@ -249,7 +261,7 @@ struct TodayTrainingCard: View {
             } else {
                 VStack(spacing: 12) {
                     HStack {
-                        Text("🧗")
+                        Text(currentEmoji)
                             .font(.title)
                         VStack(alignment: .leading) {
                             Text("How are you today?")
@@ -261,7 +273,12 @@ struct TodayTrainingCard: View {
                         }
                         Spacer()
                     }
-
+                    .onAppear {
+                        if currentEmoji.isEmpty {
+                            currentEmoji = motivationalEmojis.randomElement() ?? motivationalEmojis[0]
+                            }
+                        }
+                    
                     Button(action: onQuickLog) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
@@ -289,81 +306,121 @@ struct TodayQuickLogView: View {
     @State private var duration = "60"
     @State private var selectedMood = "💪"
     @State private var notes = ""
+    @State private var durationHours: Double = 1.0
+    @State private var routes: [ClimbingRoute] = [ClimbingRoute()]
 
     let moods = ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                Text("Quick Log for Today")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.top)
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Duration")
-                        .font(.headline)
+            ScrollView {
+                VStack(spacing: 20) {
+                    /*
+                    Text("Quick Log for Today")
+                        .font(.title2)
+                        .fontWeight(.bold)
+                        .padding(.top)
+                    */
                     HStack {
-                        TextField("Duration", text: $duration)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.numberPad)
-                        Text("minutes")
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("How was your session?")
-                        .font(.headline)
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
-                        ForEach(moods, id: \.self) { mood in
+                        Text("Duration")
+                            .bold()
+                        Spacer()
+                        
+                        HStack(spacing: 12) {
                             Button(action: {
-                                selectedMood = mood
+                                if durationHours > 0.5 {
+                                    durationHours -= 0.5
+                                    duration = String(Int(durationHours * 60))
+                                }
                             }) {
-                                Text(mood)
-                                    .font(.title)
-                                    .frame(width: 50, height: 50)
-                                    .background(selectedMood == mood ? Color.orange.opacity(0.3) : Color.gray.opacity(0.1))
-                                    .clipShape(Circle())
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            
+                            Text("\(durationHours, specifier: "%.1f") h")
+                                .frame(width: 60)
+                            //.font(.subheadline)
+                            
+                            Button(action: {
+                                durationHours += 0.5
+                                duration = String(Int(durationHours * 60))
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.blue)
                             }
                             .buttonStyle(PlainButtonStyle())
                         }
                     }
+                    
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("How was your session?")
+                            .font(.headline)
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
+                            ForEach(moods, id: \.self) { mood in
+                                Button(action: {
+                                    selectedMood = mood
+                                }) {
+                                    Text(mood)
+                                        .font(.title)
+                                        .frame(width: 50, height: 50)
+                                        .background(selectedMood == mood ? Color.orange.opacity(0.3) : Color.gray.opacity(0.1))
+                                        .clipShape(Circle())
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    
+
+                    RoutesSection(routes: $routes)
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Notes (optional)")
+                            .font(.headline)
+                        TextEditor(text: $notes)
+                            .frame(height: 80)
+                            .padding(4)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(8)
+                    }
+                    
+                    Spacer()
+                    
+                    HStack(spacing: 12) {
+                        Button("Cancel") {
+                            dismiss()
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.gray.opacity(0.2))
+                        .foregroundColor(.primary)
+                        .cornerRadius(10)
+                        
+                        Button("Save Session") {
+                            saveSession()
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                    }
                 }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Notes (optional)")
-                        .font(.headline)
-                    TextEditor(text: $notes)
-                        .frame(height: 80)
-                        .padding(4)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
-                }
-
-                Spacer()
-
-                HStack(spacing: 12) {
+                .padding()
+            }
+            .navigationTitle("Quick Log for today")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
                         dismiss()
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.primary)
-                    .cornerRadius(10)
-
-                    Button("Save Session") {
-                        saveSession()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
                 }
             }
-            .padding()
         }
     }
 
@@ -376,6 +433,7 @@ struct TodayQuickLogView: View {
         newSession.duration = durationInt
         newSession.mood = selectedMood
         newSession.notes = notes.isEmpty ? nil : notes
+        newSession.routes = routes
 
         do {
             try viewContext.save()
@@ -385,7 +443,6 @@ struct TodayQuickLogView: View {
         }
     }
 }
-
 
 struct HomeSessionRow: View {
     let session: ClimbingSession
@@ -416,6 +473,18 @@ struct HomeSessionRow: View {
                         .foregroundColor(.secondary)
                         .lineLimit(3)
                 }
+
+                // Routes summary
+                if !session.routes.isEmpty {
+                    HStack {
+                        Text("Routes: ")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(routesSummary(session.routes))
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                    }
+                }
             }
         }
         .padding()
@@ -423,12 +492,13 @@ struct HomeSessionRow: View {
         .cornerRadius(8)
         
         // 👇 只有左滑该行时才显示按钮
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button(role: .destructive) {
+        .swipeActions(edge: .trailing, allowsFullSwipe: true) {
+            Button {
                 showingDeleteAlert = true
             } label: {
                 Label("Delete", systemImage: "trash")
             }
+            .tint(.red)
             
             Button {
                 showingEditSheet = true
@@ -458,6 +528,15 @@ struct HomeSessionRow: View {
             } catch {
                 print("Error deleting session: \(error)")
             }
+        }
+    }
+
+    private func routesSummary(_ routes: [ClimbingRoute]) -> String {
+        let routesWithDifficulty = routes.compactMap { $0.difficulty?.displayName }
+        if routesWithDifficulty.isEmpty {
+            return "\(routes.count) route\(routes.count == 1 ? "" : "s")"
+        } else {
+            return routesWithDifficulty.prefix(3).joined(separator: ", ") + (routesWithDifficulty.count > 3 ? "..." : "")
         }
     }
 }

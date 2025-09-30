@@ -15,6 +15,7 @@ struct StatsView: View {
     var body: some View {
         NavigationView {
             VStack(spacing: 0) {
+                /*
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
                         QuickStatCard(value: "\(sessions.count)", title: "Total Sessions")
                         QuickStatCard(value: String(format: "%.1f", totalHours), title: "Total Hours")
@@ -27,6 +28,7 @@ struct StatsView: View {
                             total + Double(session.duration) / 60.0
                         }
                     }
+                */
                 // Tab picker for different views
                 Picker("Stats View", selection: $selectedTab) {
                     Text("Weekly").tag(0)
@@ -35,7 +37,7 @@ struct StatsView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .padding(.horizontal, 20)
-                .padding(.bottom)
+                .padding(.vertical)
 
 
                 // Content based on selected tab
@@ -80,7 +82,7 @@ struct WeeklyStatsView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("Sessions on \(selectedDateFormatted)")
-                        .font(.headline)
+                        .font(.subheadline)
                         .fontWeight(.semibold)
                     Spacer()
                     if sessionsForSelectedDate.isEmpty {
@@ -98,10 +100,18 @@ struct WeeklyStatsView: View {
                 }
 
                 if sessionsForSelectedDate.isEmpty {
-                    Text("No sessions recorded for this day")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.vertical, 8)
+                    if selectedDate > Date() {
+                        Text("We are young, we still have tomorrow.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .italic()
+                            .padding(.vertical, 8)
+                    } else {
+                        Text("No sessions recorded for this day")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.vertical, 8)
+                    }
                 } else {
                     LazyVStack(spacing: 8) {
                         ForEach(sessionsForSelectedDate, id: \.id) { session in
@@ -153,7 +163,7 @@ struct MonthlyCalendarView: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text("Sessions on \(selectedDateFormatted)")
-                        .font(.headline)
+                        .font(.subheadline)
                         .fontWeight(.semibold)
                     Spacer()
                     if sessionsForSelectedDate.isEmpty {
@@ -171,10 +181,18 @@ struct MonthlyCalendarView: View {
                 }
 
                 if sessionsForSelectedDate.isEmpty {
-                    Text("No sessions recorded for this day")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .padding(.vertical, 8)
+                    if selectedDate > Date() {
+                        Text("We are young, we still have tomorrow.")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .italic()
+                            .padding(.vertical, 8)
+                    } else {
+                        Text("No sessions recorded for this day")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.vertical, 8)
+                    }
                 } else {
                     LazyVStack(spacing: 8) {
                         ForEach(sessionsForSelectedDate, id: \.id) { session in
@@ -258,13 +276,35 @@ struct SessionRowForDate: View {
                         .foregroundColor(.secondary)
                         .lineLimit(10)
                 }
+
+                // Routes summary
+                if !session.routes.isEmpty {
+                    HStack {
+                        Text("Routes: ")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(routesSummary(session.routes))
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        Spacer()
+                    }
+                }
             }
             Spacer()
         }
         .padding()
-        .background(Color.white)
+        .background(Color.gray.opacity(0.05))
         .cornerRadius(8)
         //.shadow(color: .gray.opacity(0.1), radius: 2, x: 0, y: 1)
+    }
+
+    private func routesSummary(_ routes: [ClimbingRoute]) -> String {
+        let routesWithDifficulty = routes.compactMap { $0.difficulty?.displayName }
+        if routesWithDifficulty.isEmpty {
+            return "\(routes.count) route\(routes.count == 1 ? "" : "s")"
+        } else {
+            return routesWithDifficulty.prefix(3).joined(separator: ", ") + (routesWithDifficulty.count > 3 ? "..." : "")
+        }
     }
 }
 
@@ -275,26 +315,52 @@ struct QuickLogView: View {
     @State private var duration = "60"
     @State private var selectedMood = "💪"
     @State private var notes = ""
+    @State private var durationHours: Double = 1.0
+    @State private var routes: [ClimbingRoute] = [ClimbingRoute()]
 
     let moods = ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                Text("Quick Log for \(dateFormatted)")
+            ScrollView {
+                VStack(spacing: 20) {
+                    /*
+                    Text("Quick Log for \(selectedDateFormatted)")
                     .font(.title2)
                     .fontWeight(.bold)
                     .padding(.top)
-
-                VStack(alignment: .leading, spacing: 12) {
+*/
+                HStack {
                     Text("Duration")
-                        .font(.headline)
-                    HStack {
-                        TextField("Duration", text: $duration)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .keyboardType(.numberPad)
-                        Text("minutes")
-                            .foregroundColor(.secondary)
+                        .bold()
+                    Spacer()
+
+                    HStack(spacing: 12) {
+                        Button(action: {
+                            if durationHours > 0.5 {
+                                durationHours -= 0.5
+                                duration = String(Int(durationHours * 60))
+                            }
+                        }) {
+                            Image(systemName: "minus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+
+                        Text("\(durationHours, specifier: "%.1f") h")
+                            .frame(width: 60)
+                            //.font(.subheadline)
+
+                        Button(action: {
+                            durationHours += 0.5
+                            duration = String(Int(durationHours * 60))
+                        }) {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundColor(.blue)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
 
@@ -327,7 +393,7 @@ struct QuickLogView: View {
                         .cornerRadius(8)
                 }
 
-                Spacer()
+                RoutesSection(routes: $routes)
 
                 HStack(spacing: 12) {
                     Button("Cancel") {
@@ -348,16 +414,27 @@ struct QuickLogView: View {
                     .foregroundColor(.white)
                     .cornerRadius(10)
                 }
+                }
+                .padding()
             }
-            .padding()
+            .navigationTitle("Quick Log for \(selectedDateFormatted)")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
-
-    private var dateFormatted: String {
+    
+    private var selectedDateFormatted: String {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         return formatter.string(from: selectedDate)
     }
+
 
     private func saveSession() {
         guard let durationInt = Int32(duration), durationInt > 0 else { return }
@@ -368,6 +445,7 @@ struct QuickLogView: View {
         newSession.duration = durationInt
         newSession.mood = selectedMood
         newSession.notes = notes.isEmpty ? nil : notes
+        newSession.routes = routes
 
         do {
             try viewContext.save()
@@ -383,113 +461,97 @@ struct MonthlyChart: View {
     private let calendar = Calendar.current
 
     var body: some View {
-        ScrollView(.horizontal, showsIndicators: false){
-            VStack(alignment: .leading, spacing: 10) {
-                // Chart
-                HStack(alignment: .bottom, spacing: 10) {
-                    ForEach(monthlyData, id: \.month) { data in
-                        VStack(spacing: 4) {
-                            // Hours bar
-                            Rectangle()
-                                .fill(data.hours > 0 ? Color.green.opacity(0.7) : Color.gray.opacity(0.3))
-                                .frame(width: 30, height: CGFloat(max(10, data.hours * 5)))
-                                .cornerRadius(2)
-                                .overlay(
-                                    // 高亮当前月份
-                                    RoundedRectangle(cornerRadius: 4)
-                                        .stroke(Color.blue, lineWidth: Calendar.current.component(.month, from: Date()) == data.month ? 1 : 0)
-                                )
-                                .padding(.top)
-                                
-                            
-                            // Hours label
-                            Text(String(format: "%.1f", data.hours))
-                                .font(.caption2)
-                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .secondary)
-                            
-                            // Month label
-                            Text(data.monthLabel)
-                                .font(.caption2)
-                                .fontWeight(.medium)
-                                .rotationEffect(.degrees(0))
-                                .frame(width: 30)
-                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .primary)
+        VStack(spacing: 16) {
+            // Hours Chart
+            ScrollView(.horizontal, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .bottom, spacing: 10) {
+                        ForEach(monthlyData, id: \.month) { data in
+                            VStack(spacing: 4) {
+                                Rectangle()
+                                    .fill(data.hours > 0 ? Color.green.opacity(0.7) : Color.gray.opacity(0.3))
+                                    .frame(width: 30, height: CGFloat(max(10, data.hours * 5)))
+                                    .cornerRadius(2)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(Color.blue, lineWidth: Calendar.current.component(.month, from: Date()) == data.month ? 2 : 0)
+                                    )
+                                    .padding(.top)
+
+                                Text(String(format: "%.1f", data.hours))
+                                    .font(.caption2)
+                                    .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .secondary)
+
+                                Text(data.monthLabel)
+                                    .font(.caption2)
+                                    .fontWeight(.medium)
+                                    .frame(width: 30)
+                                    .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .primary)
+                            }
                         }
                     }
-                }}
-            .padding()
-            .background(Color.gray.opacity(0.05))
-            .cornerRadius(12)
+                    .padding()
+                    .background(Color.gray.opacity(0.05))
+                    .cornerRadius(12)
 
-            // Legend
-            HStack(spacing: 16) {
-                HStack(spacing: 4) {
-                    Rectangle()
-                        .fill(Color.green.opacity(0.7))
-                        .frame(width: 12, height: 12)
-                        .cornerRadius(2)
-                    Text("Hours")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        Rectangle()
+                            .fill(Color.green.opacity(0.7))
+                            .frame(width: 12, height: 12)
+                            .cornerRadius(2)
+                        Text("Hours")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
-                Spacer()
             }
-            
-        }
-        ScrollView(.horizontal, showsIndicators: false){
-            VStack(alignment: .leading, spacing: 10) {
-                // Chart
-                HStack(alignment: .bottom, spacing: 10) {
-                    ForEach(monthlyData, id: \.month) { data in
-                        VStack(spacing: 4) {
-                              // Sessions bar
-                             Rectangle()
-                                .fill(data.sessions > 0 ? Color.blue.opacity(0.7): Color.gray.opacity(0.3))
-                             .frame(width: 30, height: CGFloat(max(10, data.sessions * 10)))
-                             .cornerRadius(2)
-                             .overlay(
-                                 // 高亮当前月份
-                                 RoundedRectangle(cornerRadius: 4)
-                                     .stroke(Color.blue, lineWidth: Calendar.current.component(.month, from: Date()) == data.month ? 1 : 0)
-                             )
-                             .padding(.top)
-                            
-                            // Hours label
-                            Text(String(format: "%.f", data.hours))
-                                .font(.caption2)
-                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .secondary)
-                            
-                            
-                            // Month label
-                            Text(data.monthLabel)
-                                .font(.caption2)
-                                .fontWeight(.medium)
-                                .rotationEffect(.degrees(0))
-                                .frame(width: 30)
-                                .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .primary)
+            // Sessions Chart
+            ScrollView(.horizontal, showsIndicators: false) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(alignment: .bottom, spacing: 10) {
+                        ForEach(monthlyData, id: \.month) { data in
+                            VStack(spacing: 4) {
+                                Rectangle()
+                                    .fill(data.sessions > 0 ? Color.blue.opacity(0.7): Color.gray.opacity(0.3))
+                                    .frame(width: 30, height: CGFloat(max(10, data.sessions * 10)))
+                                    .cornerRadius(2)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 4)
+                                            .stroke(Color.blue, lineWidth: Calendar.current.component(.month, from: Date()) == data.month ? 2 : 0)
+                                    )
+                                    .padding(.top)
+
+                                Text(String(format: "%.0f", Double(data.sessions)))
+                                    .font(.caption2)
+                                    .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .secondary)
+
+                                Text(data.monthLabel)
+                                    .font(.caption2)
+                                    .fontWeight(.medium)
+                                    .frame(width: 30)
+                                    .foregroundColor(Calendar.current.component(.month, from: Date()) == data.month ? .blue : .primary)
+                            }
                         }
                     }
-                }}
-            .padding()
-            .background(Color.gray.opacity(0.05))
-            .cornerRadius(12)
+                    .padding()
+                    .background(Color.gray.opacity(0.05))
+                    .cornerRadius(12)
 
-            // Legend
-            HStack(spacing: 16) {
-                HStack(spacing: 4) {
-                    Rectangle()
-                        .fill(Color.blue.opacity(0.7))
-                        .frame(width: 12, height: 12)
-                        .cornerRadius(2)
-                    Text("Sessions")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    HStack(spacing: 4) {
+                        Rectangle()
+                            .fill(Color.blue.opacity(0.7))
+                            .frame(width: 12, height: 12)
+                            .cornerRadius(2)
+                        Text("Sessions")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
-                Spacer()
             }
-            
         }
         
     }

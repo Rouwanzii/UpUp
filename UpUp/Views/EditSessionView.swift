@@ -12,6 +12,7 @@ struct EditSessionView: View {
     @State private var selectedMood: String
     @State private var notes: String
     @State private var durationHours: Double
+    @State private var routes: [ClimbingRoute]
 
     let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
 
@@ -22,6 +23,7 @@ struct EditSessionView: View {
         self._selectedMood = State(initialValue: session.mood ?? "😊")
         self._notes = State(initialValue: session.notes ?? "")
         self._durationHours = State(initialValue: Double(session.duration) / 60.0)
+        self._routes = State(initialValue: session.routes.isEmpty ? [ClimbingRoute()] : session.routes)
     }
 
     var body: some View {
@@ -92,6 +94,11 @@ struct EditSessionView: View {
                 }
                 .padding(.vertical, 2)
 
+                Section("Climbed Routes (Optional)") {
+                    RoutesSection(routes: $routes)
+                }
+                .padding(.vertical, 2)
+
                 Button(action: saveChanges) {
                     Text("Save Changes")
                         .frame(maxWidth: .infinity)
@@ -126,6 +133,7 @@ struct EditSessionView: View {
         session.duration = durationInt
         session.mood = selectedMood
         session.notes = notes.isEmpty ? nil : notes
+        session.routes = routes
 
         do {
             try viewContext.save()

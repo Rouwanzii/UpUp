@@ -53,11 +53,13 @@ struct MonthlyCalendar: View {
             // Monthly summary
             HStack {
                 VStack(alignment: .leading) {
+                    /*
                     Text("This Month")
                         .font(.headline)
+                     */
                     Text("\(sessionsThisMonth) sessions")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .font(.headline)
+                        //.foregroundColor(.secondary)
                 }
 
                 Spacer()
@@ -65,10 +67,12 @@ struct MonthlyCalendar: View {
                 VStack(alignment: .trailing) {
                     Text(String(format: "%.1f hrs", totalHoursThisMonth))
                         .font(.headline)
-                        .fontWeight(.bold)
+                        //.fontWeight(.bold)
+                    /*
                     Text("total time")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
+                     */
                 }
             }
             .padding()
@@ -78,6 +82,18 @@ struct MonthlyCalendar: View {
         .padding()
         .background(Color.gray.opacity(0.05))
         .cornerRadius(12)
+        .gesture(
+            DragGesture()
+                .onEnded { value in
+                    if value.translation.width > 50 {
+                        // Swipe right - go to previous month
+                        previousMonth()
+                    } else if value.translation.width < -50 {
+                        // Swipe left - go to next month
+                        nextMonth()
+                    }
+                }
+        )
     }
 
     private var monthYearFormatter: DateFormatter {
