@@ -331,7 +331,7 @@ struct QuickLogView: View {
                     .padding(.top)
 */
                 HStack {
-                    Text("Duration")
+                    Text("how long is your session")
                         .bold()
                     Spacer()
 
@@ -365,7 +365,7 @@ struct QuickLogView: View {
                 }
 
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("How was your session?")
+                    Text("How do you feel?")
                         .font(.headline)
                     LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
                         ForEach(moods, id: \.self) { mood in
@@ -383,18 +383,19 @@ struct QuickLogView: View {
                     }
                 }
 
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("Notes (optional)")
-                        .font(.headline)
-                    TextEditor(text: $notes)
-                        .frame(height: 80)
-                        .padding(4)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
-                }
-
                 RoutesSection(routes: $routes)
+                    
+                VStack(alignment: .leading, spacing: 12) {
+                        Text("Notes (optional)")
+                            .font(.headline)
+                        TextEditor(text: $notes)
+                            .frame(height: 80)
+                            .padding(4)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(8)
+                    }
 
+                    
                 HStack(spacing: 12) {
                     Button("Cancel") {
                         dismiss()

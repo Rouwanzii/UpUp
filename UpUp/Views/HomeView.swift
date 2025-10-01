@@ -322,11 +322,11 @@ struct TodayQuickLogView: View {
                         .padding(.top)
                     */
                     HStack {
-                        Text("Duration")
+                        Text("How long is this session?")
                             .bold()
                         Spacer()
                         
-                        HStack(spacing: 12) {
+                        HStack(spacing: 2) {
                             Button(action: {
                                 if durationHours > 0.5 {
                                     durationHours -= 0.5
@@ -357,7 +357,7 @@ struct TodayQuickLogView: View {
                     
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("How was your session?")
+                        Text("How do you feel?")
                             .font(.headline)
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
                             ForEach(moods, id: \.self) { mood in
@@ -379,7 +379,7 @@ struct TodayQuickLogView: View {
                     RoutesSection(routes: $routes)
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("Notes (optional)")
+                        Text("Notes")
                             .font(.headline)
                         TextEditor(text: $notes)
                             .frame(height: 80)
@@ -390,25 +390,14 @@ struct TodayQuickLogView: View {
                     
                     Spacer()
                     
-                    HStack(spacing: 12) {
-                        Button("Cancel") {
-                            dismiss()
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.gray.opacity(0.2))
-                        .foregroundColor(.primary)
-                        .cornerRadius(10)
-                        
-                        Button("Save Session") {
-                            saveSession()
-                        }
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                    Button("Save Session") {
+                        saveSession()
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.orange)
+                    .foregroundColor(.white)
+                    .cornerRadius(10)
                 }
                 .padding()
             }
@@ -467,12 +456,6 @@ struct HomeSessionRow: View {
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
-                    if let notes = session.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(3)
-                }
 
                 // Routes summary
                 if !session.routes.isEmpty {
@@ -485,6 +468,12 @@ struct HomeSessionRow: View {
                             .foregroundColor(.blue)
                     }
                 }
+                if let notes = session.notes, !notes.isEmpty {
+                Text(notes)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .lineLimit(3)
+            }
             }
         }
         .padding()
@@ -540,136 +529,6 @@ struct HomeSessionRow: View {
         }
     }
 }
-/*
-struct SessionRow: View {
-    let session: ClimbingSession
-
-    var body: some View {
-        HStack {
-            Text(session.mood ?? "😊")
-                .font(.title2)
-
-            VStack(alignment: .leading) {
-                Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
-                    .font(.headline)
-                Text("\(session.duration) minutes")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-
-            Spacer()
-
-            if let notes = session.notes, !notes.isEmpty {
-                Image(systemName: "note.text")
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(8)
-    }
-}
-
-struct HomeSessionRow: View {
-    let session: ClimbingSession
-    @Environment(\.managedObjectContext) private var viewContext
-    @State private var showingDeleteAlert = false
-    @State private var showingEditSheet = false
-
-    var body: some View {
-        HStack {
-            Text(session.mood ?? "😊")
-                .font(.title2)
-
-            VStack(alignment: .leading, spacing: 4) {
-                if let notes = session.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                        .lineLimit(2)
-                HStack(alignment: .center) {
-                    Text(session.date?.formatted(date: .abbreviated, time: .omitted) ?? "Unknown")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Text("\(session.duration) minutes")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-
-                }
-            }
-
-            Spacer()
-
-            // Action buttons
-
-            HStack(spacing: 8) {
-                Button(action: { showingEditSheet = true }) {
-                    Image(systemName: "pencil")
-                        .foregroundColor(.blue)
-                        .padding(8)
-                        .background(Color.blue.opacity(0.1))
-                        .clipShape(Circle())
-                }
-
-                Button(action: { showingDeleteAlert = true }) {
-                    Image(systemName: "trash")
-                        .foregroundColor(.red)
-                        .padding(8)
-                        .background(Color.red.opacity(0.1))
-                        .clipShape(Circle())
-                }
-            }
-        }
-
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(8)
-        // 左滑才显示按钮
-        .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-            Button {
-                showingEditSheet = true
-            } label: {
-                Label("Edit", systemImage: "pencil")
-            }
-            .tint(.blue)
-
-            Button(role: .destructive) {
-                showingDeleteAlert = true
-            } label: {
-                Label("Delete", systemImage: "trash")
-            }
-        }
-        .alert("Delete Session", isPresented: $showingDeleteAlert) {
-            Button("Delete", role: .destructive) {
-                deleteSession()
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Are you sure you want to delete this climbing session?")
-        }
-        .sheet(isPresented: $showingEditSheet) {
-            EditSessionView(session: session)
-        }
-    }
-
-    private func deleteSession() {
-        withAnimation {
-            viewContext.delete(session)
-
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error deleting session: \(error)")
-            }
-        }
-    }
-}
-
-*/
 
 #Preview {
     HomeView()

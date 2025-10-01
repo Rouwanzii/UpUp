@@ -29,7 +29,6 @@ struct EditSessionView: View {
     var body: some View {
         NavigationView {
             Form {
-                Section() {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
 
@@ -85,17 +84,15 @@ struct EditSessionView: View {
                         }
                     }
 
-                    VStack(alignment: .leading) {
-                        Text("Notes (optional)")
-                            .bold()
-                        TextEditor(text: $notes)
-                            .frame(minHeight: 30)
-                    }
-                }
-                .padding(.vertical, 2)
 
-                Section("Climbed Routes (Optional)") {
-                    RoutesSection(routes: $routes)
+                RoutesSection(routes: $routes)
+                .padding(.vertical, 2)
+                
+                VStack(alignment: .leading) {
+                    Text("Notes (optional)")
+                        .bold()
+                    TextEditor(text: $notes)
+                        .frame(minHeight: 30)
                 }
                 .padding(.vertical, 2)
 

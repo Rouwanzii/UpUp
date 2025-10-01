@@ -3,6 +3,7 @@ import CoreData
 
 struct LogView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
     @State private var selectedDate = Date()
     @State private var duration = "60"
     @State private var durationHours: Double = 1.0
@@ -15,17 +16,18 @@ struct LogView: View {
 
     var body: some View {
         NavigationView {
-            Form {
+            ScrollView {
+                VStack(spacing: 20) {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
                     
-
+                    
                     HStack {
-                        Text("Duration")
+                        Text("How long is this session?")
                             .bold()
                         Spacer()
-
-                        HStack(spacing: 12) {
+                        
+                        HStack(spacing: 2) {
                             Button(action: {
                                 if durationHours > 0.5 {
                                     durationHours -= 0.5
@@ -37,11 +39,11 @@ struct LogView: View {
                                     .foregroundColor(.blue)
                             }
                             .buttonStyle(PlainButtonStyle())
-
+                            
                             Text("\(durationHours, specifier: "%.1f") h")
                                 .frame(width: 60)
-                                //.font(.subheadline)
-
+                            //.font(.subheadline)
+                            
                             Button(action: {
                                 durationHours += 0.5
                                 duration = String(Int(durationHours * 60))
@@ -53,9 +55,9 @@ struct LogView: View {
                             .buttonStyle(PlainButtonStyle())
                         }
                     }
-
+                    
                     VStack(alignment: .leading) {
-                        Text("How was your session?")
+                        Text("How do you feel?")
                             .bold()
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5)) {
                             ForEach(moods, id: \.self) { mood in
@@ -72,32 +74,43 @@ struct LogView: View {
                             }
                         }
                     }
-                
-
-                RoutesSection(routes: $routes)
-
-                VStack(alignment: .leading) {
-                    Text("Notes (optional)")
-                        .bold()
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 30)
+                    
+                    
+                    RoutesSection(routes: $routes)
+                    
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Notes")
+                            .font(.headline)
+                        TextEditor(text: $notes)
+                            .frame(height: 80)
+                            .padding(4)
+                            .background(Color.gray.opacity(0.1))
+                            .cornerRadius(8)
+                    }
+                    
+                    Spacer()
+                    
+                    Button(action: saveSession) {
+                        Text("Save Session")
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(canSave ? Color.green : Color.gray)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .disabled(!canSave)
+                    .listRowBackground(Color.clear)
                 }
-                
-                Button(action: saveSession) {
-                    Text("Save Session")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(canSave ? Color.green : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .disabled(!canSave)
-                .listRowBackground(Color.clear)
+                .padding()
             }
-            .navigationTitle("Log Your Session")
-                
-            .alert("Session Saved!", isPresented: $showingSuccessAlert) {
-                Button("OK") { clearForm() }
+            .navigationTitle("Quick Log for today")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("Cancel") {
+                        dismiss()
+                    }
+                }
             }
         }
     }
@@ -120,6 +133,7 @@ struct LogView: View {
         do {
             try viewContext.save()
             showingSuccessAlert = true
+            dismiss()
         } catch {
             print("Error saving session: \(error)")
         }
