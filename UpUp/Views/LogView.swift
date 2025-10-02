@@ -11,6 +11,8 @@ struct LogView: View {
     @State private var notes = ""
     @State private var showingSuccessAlert = false
     @State private var routes: [ClimbingRoute] = [ClimbingRoute()]
+    @State private var selectedEnvironment: ClimbingEnvironment? = nil
+    @State private var locationText = ""
 
     let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
 
@@ -75,9 +77,28 @@ struct LogView: View {
                         }
                     }
                     
-                    
+
                     RoutesSection(routes: $routes)
-                    
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Environment (optional)")
+                            .font(.headline)
+                            .bold()
+
+                        Picker("Environment", selection: $selectedEnvironment) {
+                            Text("None").tag(nil as ClimbingEnvironment?)
+                            ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                                Text(env.rawValue).tag(env as ClimbingEnvironment?)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+
+                        if let environment = selectedEnvironment {
+                            TextField(environment.locationPlaceholder, text: $locationText)
+                                .textFieldStyle(RoundedBorderTextFieldStyle())
+                        }
+                    }
+
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Notes")
                             .font(.headline)
@@ -129,6 +150,8 @@ struct LogView: View {
         newSession.mood = selectedMood
         newSession.notes = notes.isEmpty ? nil : notes
         newSession.routes = routes
+        newSession.environment = selectedEnvironment
+        newSession.location = locationText.isEmpty ? nil : locationText
 
         do {
             try viewContext.save()
@@ -146,6 +169,8 @@ struct LogView: View {
         selectedMood = "😊"
         notes = ""
         routes = [ClimbingRoute()]
+        selectedEnvironment = nil
+        locationText = ""
     }
 }
 

@@ -13,6 +13,8 @@ struct EditSessionView: View {
     @State private var notes: String
     @State private var durationHours: Double
     @State private var routes: [ClimbingRoute]
+    @State private var selectedEnvironment: ClimbingEnvironment?
+    @State private var locationText: String
 
     let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
 
@@ -24,6 +26,8 @@ struct EditSessionView: View {
         self._notes = State(initialValue: session.notes ?? "")
         self._durationHours = State(initialValue: Double(session.duration) / 60.0)
         self._routes = State(initialValue: session.routes.isEmpty ? [ClimbingRoute()] : session.routes)
+        self._selectedEnvironment = State(initialValue: session.environment)
+        self._locationText = State(initialValue: session.location ?? "")
     }
 
     var body: some View {
@@ -87,7 +91,26 @@ struct EditSessionView: View {
 
                 RoutesSection(routes: $routes)
                 .padding(.vertical, 2)
-                
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Environment (optional)")
+                        .bold()
+
+                    Picker("Environment", selection: $selectedEnvironment) {
+                        Text("None").tag(nil as ClimbingEnvironment?)
+                        ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                            Text(env.rawValue).tag(env as ClimbingEnvironment?)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+
+                    if let environment = selectedEnvironment {
+                        TextField(environment.locationPlaceholder, text: $locationText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    }
+                }
+                .padding(.vertical, 2)
+
                 VStack(alignment: .leading) {
                     Text("Notes (optional)")
                         .bold()
@@ -131,6 +154,8 @@ struct EditSessionView: View {
         session.mood = selectedMood
         session.notes = notes.isEmpty ? nil : notes
         session.routes = routes
+        session.environment = selectedEnvironment
+        session.location = locationText.isEmpty ? nil : locationText
 
         do {
             try viewContext.save()

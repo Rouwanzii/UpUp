@@ -8,19 +8,22 @@ struct ClimbingRoute: Codable, Identifiable {
     var difficulty: RouteDifficulty?
     var attempts: Int?
     var result: RouteResult?
+    var color: RouteColor?
 
     init() {
         self.id = UUID()
         self.difficulty = nil
         self.attempts = nil
         self.result = nil
+        self.color = nil
     }
 
-    init(difficulty: RouteDifficulty? = nil, attempts: Int? = nil, result: RouteResult? = nil) {
+    init(difficulty: RouteDifficulty? = nil, attempts: Int? = nil, result: RouteResult? = nil, color: RouteColor? = nil) {
         self.id = UUID()
         self.difficulty = difficulty
         self.attempts = attempts
         self.result = result
+        self.color = color
     }
 }
 
@@ -123,6 +126,60 @@ enum RouteResult: String, CaseIterable, Codable {
     }
 }
 
+// MARK: - Route Color
+enum RouteColor: String, CaseIterable, Codable {
+    case red = "Red"
+    case orange = "Orange"
+    case yellow = "Yellow"
+    case green = "Green"
+    case blue = "Blue"
+    case purple = "Purple"
+    case pink = "Pink"
+    case black = "Black"
+    case white = "White"
+    case gray = "Gray"
+
+    var color: Color {
+        switch self {
+        case .red:
+            return .red
+        case .orange:
+            return .orange
+        case .yellow:
+            return .yellow
+        case .green:
+            return .green
+        case .blue:
+            return .blue
+        case .purple:
+            return .purple
+        case .pink:
+            return .pink
+        case .black:
+            return .black
+        case .white:
+            return Color(white: 0.95)
+        case .gray:
+            return .gray
+        }
+    }
+}
+
+// MARK: - Climbing Environment
+enum ClimbingEnvironment: String, CaseIterable, Codable {
+    case indoor = "Indoor"
+    case outdoor = "Outdoor"
+
+    var locationPlaceholder: String {
+        switch self {
+        case .indoor:
+            return "Climbing gym name"
+        case .outdoor:
+            return "Crag name"
+        }
+    }
+}
+
 // MARK: - ClimbingSession Extensions
 extension ClimbingSession {
 
@@ -153,17 +210,55 @@ extension ClimbingSession {
             }
         }
     }
+
+    var environment: ClimbingEnvironment? {
+        get {
+            guard let id = id?.uuidString else { return nil }
+            let key = "environment_\(id)"
+            if let rawValue = UserDefaults.standard.string(forKey: key) {
+                return ClimbingEnvironment(rawValue: rawValue)
+            }
+            return nil
+        }
+        set {
+            guard let id = id?.uuidString else { return }
+            let key = "environment_\(id)"
+            if let newValue = newValue {
+                UserDefaults.standard.set(newValue.rawValue, forKey: key)
+            } else {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+    }
+
+    var location: String? {
+        get {
+            guard let id = id?.uuidString else { return nil }
+            let key = "location_\(id)"
+            return UserDefaults.standard.string(forKey: key)
+        }
+        set {
+            guard let id = id?.uuidString else { return }
+            let key = "location_\(id)"
+            if let newValue = newValue {
+                UserDefaults.standard.set(newValue, forKey: key)
+            } else {
+                UserDefaults.standard.removeObject(forKey: key)
+            }
+        }
+    }
 }
 
 // MARK: - Route UI Components
 
 struct RouteEntryView: View {
     @Binding var route: ClimbingRoute
+    var previousRouteType: ClimbingType?
     //@Binding var routes: [ClimbingRoute]
     //let onDelete: () -> Void
-    
+
     @State private var selectedClimbingType: ClimbingType = .bouldering
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             /*
@@ -179,7 +274,7 @@ struct RouteEntryView: View {
                 }
             }
              */
-            
+
             // Climbing Type Picker
             VStack(alignment: .leading, spacing: 8) {
                 Text("Type")
@@ -196,13 +291,13 @@ struct RouteEntryView: View {
                     route.difficulty = nil
                 }
             }
-            
+
             // Difficulty Picker
             VStack(alignment: .leading, spacing: 8) {
                 Text("Difficulty")
                     .font(.subheadline)
                     .bold()
-                
+
                 if selectedClimbingType == .bouldering {
                     DifficultyPickerView(
                         selectedDifficulty: $route.difficulty,
@@ -217,12 +312,47 @@ struct RouteEntryView: View {
                     )
                 }
             }
+
+            // Color Picker
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Color")
+                    .font(.subheadline)
+                    .bold()
+
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(RouteColor.allCases, id: \.self) { routeColor in
+                            Button(action: {
+                                route.color = routeColor
+                            }) {
+                                VStack(spacing: 4) {
+                                    Circle()
+                                        .fill(routeColor.color)
+                                        .frame(width: 36, height: 36)
+                                        .overlay(
+                                            Circle()
+                                                .stroke(route.color == routeColor ? Color.primary : Color.clear, lineWidth: 3)
+                                        )
+                                        .overlay(
+                                            Circle()
+                                                .stroke(routeColor == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+                                        )
+                                    Text(routeColor.rawValue)
+                                        .font(.caption2)
+                                        .foregroundColor(route.color == routeColor ? .primary : .secondary)
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // Result Picker
             VStack(alignment: .leading, spacing: 8) {
                 Text("Result")
                     .font(.subheadline)
                     .bold()
-                
+
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
                         ForEach(RouteResult.allCases, id: \.self) { result in
@@ -240,14 +370,14 @@ struct RouteEntryView: View {
                     }
                 }
             }
-            
+
             // Attempts Picker
             if route.result == .send || route.result == .fail {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Attempts")
                         .font(.subheadline)
                         .bold()
-                    
+
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
                             // 1...20 次尝试（可改成更大范围）
@@ -267,15 +397,14 @@ struct RouteEntryView: View {
                     }
                 }
             }
-
-            /*
-            .onAppear {
-                // Set initial climbing type based on current difficulty
-                if let difficulty = route.difficulty {
-                    selectedClimbingType = difficulty.climbingType
-                }
+        }
+        .onAppear {
+            // Initialize climbing type from route or previous route
+            if let difficulty = route.difficulty {
+                selectedClimbingType = difficulty.climbingType
+            } else if let previousType = previousRouteType {
+                selectedClimbingType = previousType
             }
-             */
         }
         /*
         .padding(.horizontal)
@@ -316,7 +445,7 @@ struct DifficultyPickerView: View {
 
 struct RoutesSection: View {
     @Binding var routes: [ClimbingRoute]
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -343,16 +472,18 @@ struct RoutesSection: View {
                     }
                     .padding(.bottom, 10)
 
-                    RouteEntryView(route: $routes[index])
+                    RouteEntryView(
+                        route: $routes[index],
+                        previousRouteType: index > 0 ? routes[index - 1].difficulty?.climbingType : nil
+                    )
                 }
                 .padding()
                 .background(Color.gray.opacity(0.05))
                 .cornerRadius(10)
             }
-
             // Add Route Button
             Button(action: {
-                routes.append(ClimbingRoute())
+                addNewRoute()
             }) {
                 HStack {
                     Image(systemName: "plus.circle.fill")
@@ -367,6 +498,27 @@ struct RoutesSection: View {
                 .cornerRadius(10)
             }
         }
+    }
+
+    private func addNewRoute() {
+        // Create new route with default climbing type from previous route
+        var newRoute = ClimbingRoute()
+
+        // If there's a previous route with a difficulty, use its climbing type
+        if let lastRoute = routes.last,
+           let lastDifficulty = lastRoute.difficulty {
+            // Set a default difficulty matching the previous route's type
+            // This will make the RouteEntryView initialize with the correct type
+            if lastDifficulty.climbingType == .bouldering {
+                // Don't set a specific difficulty, just let the type be inferred
+                // The selectedClimbingType in RouteEntryView will need to be initialized
+                newRoute.difficulty = nil
+            } else {
+                newRoute.difficulty = nil
+            }
+        }
+
+        routes.append(newRoute)
     }
 }
 

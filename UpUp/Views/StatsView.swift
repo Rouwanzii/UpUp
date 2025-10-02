@@ -317,6 +317,8 @@ struct QuickLogView: View {
     @State private var notes = ""
     @State private var durationHours: Double = 1.0
     @State private var routes: [ClimbingRoute] = [ClimbingRoute()]
+    @State private var selectedEnvironment: ClimbingEnvironment? = nil
+    @State private var locationText = ""
 
     let moods = ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
 
@@ -384,7 +386,26 @@ struct QuickLogView: View {
                 }
 
                 RoutesSection(routes: $routes)
-                    
+
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Environment (optional)")
+                        .font(.headline)
+                        .bold()
+
+                    Picker("Environment", selection: $selectedEnvironment) {
+                        Text("None").tag(nil as ClimbingEnvironment?)
+                        ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                            Text(env.rawValue).tag(env as ClimbingEnvironment?)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+
+                    if let environment = selectedEnvironment {
+                        TextField(environment.locationPlaceholder, text: $locationText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    }
+                }
+
                 VStack(alignment: .leading, spacing: 12) {
                         Text("Notes (optional)")
                             .font(.headline)
@@ -447,6 +468,8 @@ struct QuickLogView: View {
         newSession.mood = selectedMood
         newSession.notes = notes.isEmpty ? nil : notes
         newSession.routes = routes
+        newSession.environment = selectedEnvironment
+        newSession.location = locationText.isEmpty ? nil : locationText
 
         do {
             try viewContext.save()
