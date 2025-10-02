@@ -103,7 +103,7 @@ struct LogView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Quick Log for today")
+            .navigationTitle("Log Your History Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

@@ -159,12 +159,14 @@ extension ClimbingSession {
 
 struct RouteEntryView: View {
     @Binding var route: ClimbingRoute
-    let onDelete: () -> Void
+    //@Binding var routes: [ClimbingRoute]
+    //let onDelete: () -> Void
     
     @State private var selectedClimbingType: ClimbingType = .bouldering
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
+            /*
             HStack {
                 Text("Route")
                     .font(.headline)
@@ -176,6 +178,7 @@ struct RouteEntryView: View {
                         .font(.title2)
                 }
             }
+             */
             
             // Climbing Type Picker
             VStack(alignment: .leading, spacing: 8) {
@@ -239,30 +242,32 @@ struct RouteEntryView: View {
             }
             
             // Attempts Picker
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Attempts")
-                    .font(.subheadline)
-                    .bold()
-                
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        // 1...20 次尝试（可改成更大范围）
-                        ForEach(1...10, id: \.self) { attempt in
-                            Button(action: {
-                                route.attempts = attempt
-                            }) {
-                                Text("\(attempt)")
-                                    .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
-                                    .background(route.attempts == attempt ? Color.blue : Color.gray.opacity(0.1))
-                                    .foregroundColor(route.attempts == attempt ? .white : .primary)
-                                    .cornerRadius(12)
+            if route.result == .send || route.result == .fail {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Attempts")
+                        .font(.subheadline)
+                        .bold()
+                    
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 8) {
+                            // 1...20 次尝试（可改成更大范围）
+                            ForEach(1...10, id: \.self) { attempt in
+                                Button(action: {
+                                    route.attempts = attempt
+                                }) {
+                                    Text("\(attempt)")
+                                        .padding(.vertical, 8)
+                                        .padding(.horizontal, 12)
+                                        .background(route.attempts == attempt ? Color.blue : Color.gray.opacity(0.1))
+                                        .foregroundColor(route.attempts == attempt ? .white : .primary)
+                                        .cornerRadius(12)
+                                }
                             }
                         }
                     }
                 }
             }
-            
+
             /*
             .onAppear {
                 // Set initial climbing type based on current difficulty
@@ -272,9 +277,11 @@ struct RouteEntryView: View {
             }
              */
         }
-        .padding()
+        /*
+        .padding(.horizontal)
         .background(Color.gray.opacity(0.05))
         .cornerRadius(10)
+        */
     }
 }
 
@@ -309,7 +316,7 @@ struct DifficultyPickerView: View {
 
 struct RoutesSection: View {
     @Binding var routes: [ClimbingRoute]
-
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -319,16 +326,28 @@ struct RoutesSection: View {
                 Spacer()
             }
 
-            ForEach(routes.indices, id: \.self) { index in
-                RouteEntryView(
-                    route: $routes[index],
-                    onDelete: {
-                        // Only allow deletion if there's more than one route
-                        if routes.count > 1 {
+            ForEach(Array(routes.enumerated()), id: \.element.id) { index, route in
+                VStack {
+                    HStack {
+                        Text("Route \(index + 1)")
+                            .font(.headline)
+                            .bold()
+                        Spacer()
+                        Button(action: {
                             routes.remove(at: index)
+                        }) {
+                            Image(systemName: "minus.circle.fill")
+                                .foregroundColor(.red)
+                                .font(.title2)
                         }
                     }
-                )
+                    .padding(.bottom, 10)
+
+                    RouteEntryView(route: $routes[index])
+                }
+                .padding()
+                .background(Color.gray.opacity(0.05))
+                .cornerRadius(10)
             }
 
             // Add Route Button
