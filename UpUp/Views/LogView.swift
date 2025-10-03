@@ -23,33 +23,43 @@ struct LogView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
+            Form {
+                // Date Section
+                Section {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Where did you climb?")
-                            .bold()
+                }
 
-                        Picker("Environment", selection: $selectedEnvironment) {
-                            ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
-                                Text(env.rawValue).tag(env)
+                // Session Details Section
+                Section(header: Text("Session Details")) {
+                    // Location
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Where did you climb?")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Picker("", selection: $selectedEnvironment) {
+                                ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                                    Text(env.rawValue).tag(env)
+                                }
                             }
+                            .pickerStyle(MenuPickerStyle())
                         }
-                        .pickerStyle(SegmentedPickerStyle())
 
                         TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                     }
-                    .padding(.vertical, 2)
-                    
+                    .padding(.vertical, 4)
+
+                    // Duration
                     HStack {
-                        Text("How long is this session?")
-                            .bold()
+                        Text("How long is your session?")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                         Spacer()
-                        
-                        HStack(spacing: 2) {
+
+                        HStack(spacing: 0) {
                             Button(action: {
                                 if durationHours > 0.5 {
                                     durationHours -= 0.5
@@ -57,37 +67,39 @@ struct LogView: View {
                                 }
                             }) {
                                 Image(systemName: "minus.circle.fill")
-                                    .font(.title2)
+                                    .font(.title3)
                                     .foregroundColor(.blue)
                             }
-                            .buttonStyle(PlainButtonStyle())
-                            
+
                             Text("\(durationHours, specifier: "%.1f") h")
+                                .font(.body)
                                 .frame(width: 60)
-                            //.font(.subheadline)
-                            
+
                             Button(action: {
                                 durationHours += 0.5
                                 duration = String(Int(durationHours * 60))
                             }) {
                                 Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
+                                    .font(.title3)
                                     .foregroundColor(.blue)
                             }
-                            .buttonStyle(PlainButtonStyle())
                         }
                     }
-                    
-                    VStack(alignment: .leading) {
+                    .padding(.vertical, 4)
+
+                    // Mood
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("How do you feel?")
-                            .bold()
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5)) {
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
                             ForEach(moods, id: \.self) { mood in
                                 Button(action: {
                                     selectedMood = mood
                                 }) {
                                     Text(mood)
-                                        .font(.title)
+                                        .font(.title2)
                                         .frame(width: 50, height: 50)
                                         .background(selectedMood == mood ? Color.green.opacity(0.3) : Color.gray.opacity(0.1))
                                         .clipShape(Circle())
@@ -96,24 +108,25 @@ struct LogView: View {
                             }
                         }
                     }
-                    
+                    .padding(.vertical, 4)
+                }
 
-                    RoutesSection(routes: $routes)
+                // Routes Section
+                Section(header: Text("Routes")) {
+                    RoutesSection(routes: $routes, environment: selectedEnvironment)
+                }
 
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Notes")
-                            .font(.headline)
-                        TextEditor(text: $notes)
-                            .frame(height: 80)
-                            .padding(4)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(8)
-                    }
-                    
-                    Spacer()
-                    
+                // Notes Section
+                Section(header: Text("Notes (Optional)")) {
+                    TextEditor(text: $notes)
+                        .frame(minHeight: 80)
+                }
+
+                // Save Button
+                Section {
                     Button(action: saveSession) {
                         Text("Save Session")
+                            .font(.headline)
                             .frame(maxWidth: .infinity)
                             .padding()
                             .background(canSave ? Color.green : Color.gray)
@@ -121,11 +134,11 @@ struct LogView: View {
                             .cornerRadius(10)
                     }
                     .disabled(!canSave)
+                    .listRowInsets(EdgeInsets())
                     .listRowBackground(Color.clear)
                 }
-                .padding()
             }
-            .navigationTitle("Log Your History Session")
+            .navigationTitle("Log Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

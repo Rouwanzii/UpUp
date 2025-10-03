@@ -33,31 +33,42 @@ struct EditSessionView: View {
     var body: some View {
         NavigationView {
             Form {
+                // Date Section
+                Section {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
-                
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Where did you climb?")
-                        .bold()
-
-                    Picker("Environment", selection: $selectedEnvironment) {
-                        ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
-                            Text(env.rawValue).tag(env)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-
-                    TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
                 }
-                .padding(.vertical, 2)
-                
+
+                // Session Details Section
+                Section(header: Text("Session Details")) {
+                    // Location
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Where did you climb?")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Picker("", selection: $selectedEnvironment) {
+                                ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                                    Text(env.rawValue).tag(env)
+                                }
+                            }
+                            .pickerStyle(MenuPickerStyle())
+                        }
+
+                        TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    }
+                    .padding(.vertical, 4)
+
+                    // Duration
                     HStack {
-                        Text("How long is this session?")
-                            .bold()
+                        Text("How long is your session?")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
                         Spacer()
 
-                        HStack(spacing: 1) {
+                        HStack(spacing: 0) {
                             Button(action: {
                                 if durationHours > 0.5 {
                                     durationHours -= 0.5
@@ -65,36 +76,39 @@ struct EditSessionView: View {
                                 }
                             }) {
                                 Image(systemName: "minus.circle.fill")
-                                    .font(.title2)
+                                    .font(.title3)
                                     .foregroundColor(.blue)
                             }
 
                             Text("\(durationHours, specifier: "%.1f") h")
+                                .font(.body)
                                 .frame(width: 60)
-                                .font(.headline)
 
                             Button(action: {
                                 durationHours += 0.5
                                 duration = String(Int(durationHours * 60))
                             }) {
                                 Image(systemName: "plus.circle.fill")
-                                    .font(.title2)
+                                    .font(.title3)
                                     .foregroundColor(.blue)
                             }
                         }
                     }
-                    
+                    .padding(.vertical, 4)
 
-                    VStack(alignment: .leading) {
+                    // Mood
+                    VStack(alignment: .leading, spacing: 12) {
                         Text("How do you feel?")
-                            .bold()
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5)) {
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5), spacing: 12) {
                             ForEach(moods, id: \.self) { mood in
                                 Button(action: {
                                     selectedMood = mood
                                 }) {
                                     Text(mood)
-                                        .font(.title)
+                                        .font(.title2)
                                         .frame(width: 50, height: 50)
                                         .background(selectedMood == mood ? Color.green.opacity(0.3) : Color.gray.opacity(0.1))
                                         .clipShape(Circle())
@@ -103,30 +117,35 @@ struct EditSessionView: View {
                             }
                         }
                     }
+                    .padding(.vertical, 4)
+                }
 
+                // Routes Section
+                Section(header: Text("Routes")) {
+                    RoutesSection(routes: $routes, environment: selectedEnvironment)
+                }
 
-                RoutesSection(routes: $routes)
-                .padding(.vertical, 2)
-
-
-                VStack(alignment: .leading) {
-                    Text("Notes (optional)")
-                        .bold()
+                // Notes Section
+                Section(header: Text("Notes (Optional)")) {
                     TextEditor(text: $notes)
-                        .frame(minHeight: 30)
+                        .frame(minHeight: 80)
                 }
-                .padding(.vertical, 2)
 
-                Button(action: saveChanges) {
-                    Text("Save Changes")
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(canSave ? Color.green : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
+                // Save Button
+                Section {
+                    Button(action: saveChanges) {
+                        Text("Save Changes")
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(canSave ? Color.green : Color.gray)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
+                    }
+                    .disabled(!canSave)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
-                .disabled(!canSave)
-                .listRowBackground(Color.clear)
             }
             .navigationTitle("Edit Session")
             .navigationBarTitleDisplayMode(.inline)

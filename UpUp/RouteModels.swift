@@ -9,6 +9,7 @@ struct ClimbingRoute: Codable, Identifiable {
     var attempts: Int?
     var result: RouteResult?
     var color: RouteColor?
+    var name: String?
 
     init() {
         self.id = UUID()
@@ -16,14 +17,16 @@ struct ClimbingRoute: Codable, Identifiable {
         self.attempts = nil
         self.result = nil
         self.color = nil
+        self.name = nil
     }
 
-    init(difficulty: RouteDifficulty? = nil, attempts: Int? = nil, result: RouteResult? = nil, color: RouteColor? = nil) {
+    init(difficulty: RouteDifficulty? = nil, attempts: Int? = nil, result: RouteResult? = nil, color: RouteColor? = nil, name: String? = nil) {
         self.id = UUID()
         self.difficulty = difficulty
         self.attempts = attempts
         self.result = result
         self.color = color
+        self.name = name
     }
 }
 
@@ -254,14 +257,17 @@ extension ClimbingSession {
 struct RouteEntryView: View {
     @Binding var route: ClimbingRoute
     var previousRouteType: ClimbingType?
+    var environment: ClimbingEnvironment
     //@Binding var routes: [ClimbingRoute]
     //let onDelete: () -> Void
 
     @State private var selectedClimbingType: ClimbingType
+    @State private var routeNameText: String = ""
 
-    init(route: Binding<ClimbingRoute>, previousRouteType: ClimbingType? = nil) {
+    init(route: Binding<ClimbingRoute>, previousRouteType: ClimbingType? = nil, environment: ClimbingEnvironment = .indoor) {
         self._route = route
         self.previousRouteType = previousRouteType
+        self.environment = environment
 
         // Initialize selectedClimbingType based on route's difficulty or previous route type
         if let difficulty = route.wrappedValue.difficulty {
@@ -271,29 +277,18 @@ struct RouteEntryView: View {
         } else {
             self._selectedClimbingType = State(initialValue: .bouldering)
         }
+
+        // Initialize route name
+        self._routeNameText = State(initialValue: route.wrappedValue.name ?? "")
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            /*
-            HStack {
-                Text("Route")
-                    .font(.headline)
-                    .bold()
-                Spacer()
-                Button(action: onDelete) {
-                    Image(systemName: "minus.circle.fill")
-                        .foregroundColor(.red)
-                        .font(.title2)
-                }
-            }
-             */
-
-            // Climbing Type Picker
-            VStack(alignment: .leading, spacing: 8) {
+        VStack(alignment: .leading, spacing: 16) {
+            // Climbing Type
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Type")
                     .font(.subheadline)
-                    .bold()
+                    .foregroundColor(.secondary)
                 Picker("Climbing Type", selection: $selectedClimbingType) {
                     ForEach(ClimbingType.allCases, id: \.self) { type in
                         Text(type.rawValue).tag(type)
@@ -301,16 +296,15 @@ struct RouteEntryView: View {
                 }
                 .pickerStyle(SegmentedPickerStyle())
                 .onChange(of: selectedClimbingType) {
-                    // Reset difficulty when changing type
                     route.difficulty = nil
                 }
             }
 
-            // Difficulty Picker
-            VStack(alignment: .leading, spacing: 8) {
+            // Difficulty
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Difficulty")
                     .font(.subheadline)
-                    .bold()
+                    .foregroundColor(.secondary)
 
                 if selectedClimbingType == .bouldering {
                     DifficultyPickerView(
@@ -327,45 +321,60 @@ struct RouteEntryView: View {
                 }
             }
 
-            // Color Picker
-            VStack(alignment: .leading, spacing: 8) {
-                Text("Color")
-                    .font(.subheadline)
-                    .bold()
+            // Color (Indoor) or Name (Outdoor)
+            if environment == .indoor {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Color")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 8) {
-                        ForEach(RouteColor.allCases, id: \.self) { routeColor in
-                            Button(action: {
-                                route.color = routeColor
-                            }) {
-                                VStack(spacing: 4) {
-                                    Circle()
-                                        .fill(routeColor.color)
-                                        .frame(width: 36, height: 36)
-                                        .overlay(
-                                            Circle()
-                                                .stroke(route.color == routeColor ? Color.primary : Color.clear, lineWidth: 3)
-                                        )
-                                        .overlay(
-                                            Circle()
-                                                .stroke(routeColor == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-                                        )
-                                    Text(routeColor.rawValue)
-                                        .font(.caption2)
-                                        .foregroundColor(route.color == routeColor ? .primary : .secondary)
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            ForEach(RouteColor.allCases, id: \.self) { routeColor in
+                                Button(action: {
+                                    route.color = routeColor
+                                }) {
+                                    VStack(spacing: 4) {
+                                        Circle()
+                                            .fill(routeColor.color)
+                                            .frame(width: 40, height: 40)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(route.color == routeColor ? Color.blue : Color.clear, lineWidth: 2.5)
+                                            )
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(routeColor == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+                                            )
+                                        Text(routeColor.rawValue)
+                                            .font(.caption2)
+                                            .foregroundColor(route.color == routeColor ? .blue : .secondary)
+                                    }
                                 }
                             }
                         }
+                        .padding(.vertical, 4)
                     }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Route Name")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    TextField("Enter route name", text: $routeNameText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .onChange(of: routeNameText) {
+                            route.name = routeNameText.isEmpty ? nil : routeNameText
+                        }
                 }
             }
 
-            // Result Picker
-            VStack(alignment: .leading, spacing: 8) {
+            // Result
+            VStack(alignment: .leading, spacing: 6) {
                 Text("Result")
                     .font(.subheadline)
-                    .bold()
+                    .foregroundColor(.secondary)
 
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 8) {
@@ -374,49 +383,47 @@ struct RouteEntryView: View {
                                 route.result = result
                             }) {
                                 Text(result.displayName)
+                                    .font(.subheadline)
                                     .padding(.vertical, 8)
-                                    .padding(.horizontal, 12)
-                                    .background(route.result == result ? Color.blue : Color.gray.opacity(0.1))
+                                    .padding(.horizontal, 16)
+                                    .background(route.result == result ? Color.blue : Color(.systemGray5))
                                     .foregroundColor(route.result == result ? .white : .primary)
-                                    .cornerRadius(12)
+                                    .cornerRadius(20)
                             }
                         }
                     }
+                    .padding(.vertical, 4)
                 }
             }
 
-            // Attempts Picker
+            // Attempts
             if route.result == .send || route.result == .fail {
-                VStack(alignment: .leading, spacing: 8) {
+                VStack(alignment: .leading, spacing: 6) {
                     Text("Attempts")
                         .font(.subheadline)
-                        .bold()
+                        .foregroundColor(.secondary)
 
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack(spacing: 8) {
-                            // 1...20 次尝试（可改成更大范围）
                             ForEach(1...10, id: \.self) { attempt in
                                 Button(action: {
                                     route.attempts = attempt
                                 }) {
                                     Text("\(attempt)")
+                                        .font(.subheadline)
                                         .padding(.vertical, 8)
-                                        .padding(.horizontal, 12)
-                                        .background(route.attempts == attempt ? Color.blue : Color.gray.opacity(0.1))
+                                        .padding(.horizontal, 16)
+                                        .background(route.attempts == attempt ? Color.blue : Color(.systemGray5))
                                         .foregroundColor(route.attempts == attempt ? .white : .primary)
-                                        .cornerRadius(12)
+                                        .cornerRadius(20)
                                 }
                             }
                         }
+                        .padding(.vertical, 4)
                     }
                 }
             }
         }
-        /*
-        .padding(.horizontal)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(10)
-        */
     }
 }
 
@@ -451,65 +458,60 @@ struct DifficultyPickerView: View {
 
 struct RoutesSection: View {
     @Binding var routes: [ClimbingRoute]
+    var environment: ClimbingEnvironment
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack {
-                Text("Climbed Routes")
-                    .font(.headline)
-                    .bold()
-                Spacer()
-            }
-
+        VStack(spacing: 12) {
             ForEach(Array(routes.enumerated()), id: \.element.id) { index, route in
-                VStack {
+                VStack(alignment: .leading, spacing: 0) {
                     HStack {
                         Text("Route \(index + 1)")
                             .font(.headline)
-                            .bold()
+                            .foregroundColor(.primary)
                         Spacer()
                         Button(action: {
-                            routes.remove(at: index)
+                            routes.removeAll { $0.id == route.id }
                         }) {
-                            Image(systemName: "minus.circle.fill")
-                                .foregroundColor(.red)
-                                .font(.title2)
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundColor(.red.opacity(0.7))
+                                .font(.title3)
                         }
+                        .buttonStyle(BorderlessButtonStyle())
                     }
-                    .padding(.bottom, 10)
+                    .padding(.bottom, 8)
 
-                    RouteEntryView(
-                        route: $routes[index],
-                        previousRouteType: index > 0 ? routes[index - 1].difficulty?.climbingType : nil
-                    )
+                    if let bindingIndex = routes.firstIndex(where: { $0.id == route.id }) {
+                        RouteEntryView(
+                            route: $routes[bindingIndex],
+                            previousRouteType: bindingIndex > 0 ? routes[bindingIndex - 1].difficulty?.climbingType : nil,
+                            environment: environment
+                        )
+                    }
                 }
-                .padding()
-                .background(Color.gray.opacity(0.05))
-                .cornerRadius(10)
+                .padding(16)
+                .background(Color(.systemBackground))
+                .cornerRadius(12)
             }
+
             // Add Route Button
             Button(action: {
-                addNewRoute()
+                routes.append(ClimbingRoute())
             }) {
                 HStack {
                     Image(systemName: "plus.circle.fill")
-                        .foregroundColor(.green)
                     Text("Add Route")
-                        .fontWeight(.medium)
+                        .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
-                .padding()
+                .padding(.vertical, 12)
                 .background(Color.green.opacity(0.1))
-                .foregroundColor(.green)
-                .cornerRadius(10)
+                .cornerRadius(8)
             }
+            .foregroundColor(.green)
+            .buttonStyle(BorderlessButtonStyle())
         }
-    }
-
-    private func addNewRoute() {
-        // Create new route - the RouteEntryView will automatically
-        // default to the previous route's type via the previousRouteType parameter
-        routes.append(ClimbingRoute())
+        .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+        .listRowBackground(Color.clear)
     }
 }
 

@@ -261,40 +261,43 @@ struct SessionRowForDate: View {
     let session: ClimbingSession
 
     var body: some View {
-        HStack(spacing: 12) {
-            Text(session.mood ?? "😊")
-                .font(.title2)
+        NavigationLink(destination: SessionDetailView(session: session)) {
+            HStack(spacing: 12) {
+                Text(session.mood ?? "😊")
+                    .font(.title2)
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(session.duration) minutes")
-                        .font(.headline)
-                        .fontWeight(.medium)
-                
-                if let notes = session.notes, !notes.isEmpty {
-                    Text(notes)
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                        .lineLimit(10)
-                }
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("\(session.duration) minutes")
+                            .font(.headline)
+                            .fontWeight(.medium)
 
-                // Routes summary
-                if !session.routes.isEmpty {
-                    HStack {
-                        Text("Routes: ")
-                            .font(.caption)
+                    if let notes = session.notes, !notes.isEmpty {
+                        Text(notes)
+                            .font(.subheadline)
                             .foregroundColor(.secondary)
-                        Text(routesSummary(session.routes))
-                            .font(.caption)
-                            .foregroundColor(.blue)
-                        Spacer()
+                            .lineLimit(10)
+                    }
+
+                    // Routes summary
+                    if !session.routes.isEmpty {
+                        HStack {
+                            Text("Routes: ")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(routesSummary(session.routes))
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                            Spacer()
+                        }
                     }
                 }
+                Spacer()
             }
-            Spacer()
+            .padding()
+            .background(Color.gray.opacity(0.05))
+            .cornerRadius(8)
         }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(8)
+        .buttonStyle(PlainButtonStyle())
         //.shadow(color: .gray.opacity(0.1), radius: 2, x: 0, y: 1)
     }
 
@@ -329,117 +332,113 @@ struct QuickLogView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 20) {
-                    /*
-                    Text("Quick Log for \(selectedDateFormatted)")
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .padding(.top)
-*/
+            Form {
+                // Session Details Section
+                Section(header: Text("Session Details")) {
+                    // Location
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Where did you climb?")
-                            .bold()
-
-                        Picker("Environment", selection: $selectedEnvironment) {
-                            ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
-                                Text(env.rawValue).tag(env)
+                        HStack {
+                            Text("Where did you climb?")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Spacer()
+                            Picker("", selection: $selectedEnvironment) {
+                                ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                                    Text(env.rawValue).tag(env)
+                                }
                             }
+                            .pickerStyle(MenuPickerStyle())
                         }
-                        .pickerStyle(SegmentedPickerStyle())
 
                         TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
                     }
-                    .padding(.vertical, 2)
-                    
-                HStack {
-                    Text("how long is your session")
-                        .bold()
-                    Spacer()
+                    .padding(.vertical, 4)
 
-                    HStack(spacing: 12) {
-                        Button(action: {
-                            if durationHours > 0.5 {
-                                durationHours -= 0.5
-                                duration = String(Int(durationHours * 60))
-                            }
-                        }) {
-                            Image(systemName: "minus.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.blue)
-                        }
-                        .buttonStyle(PlainButtonStyle())
+                    // Duration
+                    HStack {
+                        Text("How long is your session?")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                        Spacer()
 
-                        Text("\(durationHours, specifier: "%.1f") h")
-                            .frame(width: 60)
-                            //.font(.subheadline)
-
-                        Button(action: {
-                            durationHours += 0.5
-                            duration = String(Int(durationHours * 60))
-                        }) {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
-                                .foregroundColor(.blue)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                    }
-                }
-
-                VStack(alignment: .leading, spacing: 12) {
-                    Text("How do you feel?")
-                        .font(.headline)
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4)) {
-                        ForEach(moods, id: \.self) { mood in
+                        HStack(spacing: 0) {
                             Button(action: {
-                                selectedMood = mood
+                                if durationHours > 0.5 {
+                                    durationHours -= 0.5
+                                    duration = String(Int(durationHours * 60))
+                                }
                             }) {
-                                Text(mood)
-                                    .font(.title)
-                                    .frame(width: 50, height: 50)
-                                    .background(selectedMood == mood ? Color.orange.opacity(0.3) : Color.gray.opacity(0.1))
-                                    .clipShape(Circle())
+                                Image(systemName: "minus.circle.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.orange)
                             }
-                            .buttonStyle(PlainButtonStyle())
+
+                            Text("\(durationHours, specifier: "%.1f") h")
+                                .font(.body)
+                                .frame(width: 60)
+
+                            Button(action: {
+                                durationHours += 0.5
+                                duration = String(Int(durationHours * 60))
+                            }) {
+                                Image(systemName: "plus.circle.fill")
+                                    .font(.title3)
+                                    .foregroundColor(.orange)
+                            }
                         }
                     }
+                    .padding(.vertical, 4)
+
+                    // Mood
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("How do you feel?")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+
+                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 12) {
+                            ForEach(moods, id: \.self) { mood in
+                                Button(action: {
+                                    selectedMood = mood
+                                }) {
+                                    Text(mood)
+                                        .font(.title2)
+                                        .frame(width: 50, height: 50)
+                                        .background(selectedMood == mood ? Color.orange.opacity(0.3) : Color.gray.opacity(0.1))
+                                        .clipShape(Circle())
+                                }
+                                .buttonStyle(PlainButtonStyle())
+                            }
+                        }
+                    }
+                    .padding(.vertical, 4)
                 }
 
-                RoutesSection(routes: $routes)
+                // Routes Section
+                Section(header: Text("Routes")) {
+                    RoutesSection(routes: $routes, environment: selectedEnvironment)
+                }
 
-                VStack(alignment: .leading, spacing: 12) {
-                        Text("Notes (optional)")
+                // Notes Section
+                Section(header: Text("Notes (Optional)")) {
+                    TextEditor(text: $notes)
+                        .frame(minHeight: 80)
+                }
+
+                // Save Button
+                Section {
+                    Button(action: saveSession) {
+                        Text("Save Session")
                             .font(.headline)
-                        TextEditor(text: $notes)
-                            .frame(height: 80)
-                            .padding(4)
-                            .background(Color.gray.opacity(0.1))
-                            .cornerRadius(8)
+                            .frame(maxWidth: .infinity)
+                            .padding()
+                            .background(Color.orange)
+                            .foregroundColor(.white)
+                            .cornerRadius(10)
                     }
-
-                    
-                HStack(spacing: 12) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.gray.opacity(0.2))
-                    .foregroundColor(.primary)
-                    .cornerRadius(10)
-
-                    Button("Save Session") {
-                        saveSession()
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.orange)
-                    .foregroundColor(.white)
-                    .cornerRadius(10)
+                    .listRowInsets(EdgeInsets())
+                    .listRowBackground(Color.clear)
                 }
-                }
-                .padding()
             }
             .navigationTitle("Quick Log for \(selectedDateFormatted)")
             .navigationBarTitleDisplayMode(.inline)
