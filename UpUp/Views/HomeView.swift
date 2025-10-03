@@ -340,6 +340,7 @@ struct TodayQuickLogView: View {
 
                         TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .cornerRadius(8)
                     }
                     .padding(.vertical, 4)
 
@@ -361,6 +362,7 @@ struct TodayQuickLogView: View {
                                     .font(.title3)
                                     .foregroundColor(.orange)
                             }
+                            .buttonStyle(BorderlessButtonStyle())
 
                             Text("\(durationHours, specifier: "%.1f") h")
                                 .font(.body)
@@ -374,6 +376,7 @@ struct TodayQuickLogView: View {
                                     .font(.title3)
                                     .foregroundColor(.orange)
                             }
+                            .buttonStyle(BorderlessButtonStyle())
                         }
                     }
                     .padding(.vertical, 4)

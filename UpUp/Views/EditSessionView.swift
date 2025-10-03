@@ -58,6 +58,7 @@ struct EditSessionView: View {
 
                         TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
                             .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .cornerRadius(8)
                     }
                     .padding(.vertical, 4)
 
@@ -79,6 +80,7 @@ struct EditSessionView: View {
                                     .font(.title3)
                                     .foregroundColor(.blue)
                             }
+                            .buttonStyle(BorderlessButtonStyle())
 
                             Text("\(durationHours, specifier: "%.1f") h")
                                 .font(.body)
@@ -92,6 +94,7 @@ struct EditSessionView: View {
                                     .font(.title3)
                                     .foregroundColor(.blue)
                             }
+                            .buttonStyle(BorderlessButtonStyle())
                         }
                     }
                     .padding(.vertical, 4)

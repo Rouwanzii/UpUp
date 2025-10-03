@@ -1,109 +1,169 @@
 import SwiftUI
 import CoreData
+import Charts
 
 struct SessionDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @State private var showingEditView = false
+    @State private var animateCharts = false
 
     let session: ClimbingSession
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 24) {
-                // Session Info Card
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Session Details")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            Text(formattedDate)
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        if let mood = session.mood {
-                            Text(mood)
-                                .font(.largeTitle)
-                        }
-                    }
-
-                    Divider()
-
-                    // Duration
-                    HStack {
-                        Label("Duration", systemImage: "clock.fill")
+            VStack(spacing: 20) {
+                // Date and Mood Header
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(formattedDate)
+                            .font(.title2)
+                            .fontWeight(.bold)
+                        Text("\(Double(session.duration) / 60.0, specifier: "%.1f") hours")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
-                        Spacer()
-                        Text("\(Double(session.duration) / 60.0, specifier: "%.1f") hours")
-                            .font(.body)
-                            .fontWeight(.medium)
                     }
+                    Spacer()
+                    if let mood = session.mood {
+                        Text(mood)
+                            .font(.system(size: 50))
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.top, 8)
 
-                    // Location
-                    if let environment = session.environment {
-                        HStack {
-                            Label("Environment", systemImage: environment == .indoor ? "building.2.fill" : "mountain.2.fill")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Text(environment.rawValue)
-                                .font(.body)
-                                .fontWeight(.medium)
+                // Summary Stats Cards
+                HStack(spacing: 12) {
+                    StatCard(
+                        value: "\(session.routes.count)",
+                        label: "Total Routes",
+                        color: .blue
+                    )
+
+                    StatCard(
+                        value: "\(completedRoutesCount)",
+                        label: "Completed",
+                        color: .green
+                    )
+
+                    StatCard(
+                        value: highestGrade,
+                        label: "Highest Grade",
+                        color: .orange
+                    )
+                }
+                .padding(.horizontal)
+
+                // Charts Section
+                if !session.routes.isEmpty && completedRoutesCount > 0 {
+                    VStack(spacing: 16) {
+                        // Grade Distribution Chart
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("Grade Distribution")
+                                .font(.headline)
+                                .padding(.horizontal)
+
+                            GradeDistributionChart(routes: completedRoutes)
+                                .frame(height: 200)
+                                .padding(.horizontal)
+                                .opacity(animateCharts ? 1 : 0)
+                                .offset(y: animateCharts ? 0 : 20)
                         }
+                        .padding(.vertical)
+                        .background(Color(.systemBackground))
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                        .padding(.horizontal)
 
-                        if let location = session.location, !location.isEmpty {
-                            HStack {
-                                Label("Location", systemImage: "mappin.circle.fill")
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                                Spacer()
-                                Text(location)
-                                    .font(.body)
-                                    .fontWeight(.medium)
+                        // Stats Cards
+                        HStack(spacing: 12) {
+                            CompletionStatCard(
+                                title: "Avg Attempts",
+                                value: averageAttempts,
+                                subtitle: "per route"
+                            )
+
+                            CompletionStatCard(
+                                title: "Success Rate",
+                                value: completionRate,
+                                subtitle: "overall"
+                            )
+                        }
+                        .padding(.horizontal)
+                    }
+                }
+
+                // Environment & Location
+                if let environment = session.environment {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Session Info")
+                            .font(.headline)
+                            .padding(.horizontal)
+
+                        VStack(spacing: 0) {
+                            InfoRow(
+                                icon: environment == .indoor ? "building.2.fill" : "mountain.2.fill",
+                                label: "Environment",
+                                value: environment.rawValue
+                            )
+
+                            if let location = session.location, !location.isEmpty {
+                                Divider()
+                                    .padding(.leading, 44)
+                                InfoRow(
+                                    icon: "mappin.circle.fill",
+                                    label: "Location",
+                                    value: location
+                                )
+                            }
+                        }
+                        .background(Color(.systemBackground))
+                        .cornerRadius(16)
+                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                    }
+                    .padding(.horizontal)
+                }
+
+                // Routes Section
+                if !session.routes.isEmpty {
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("Routes")
+                            .font(.headline)
+                            .padding(.horizontal)
+
+                        VStack(spacing: 12) {
+                            ForEach(Array(session.routes.enumerated()), id: \.element.id) { index, route in
+                                RouteDetailCard(route: route, index: index, environment: session.environment ?? .indoor)
+                                    .padding(.horizontal)
                             }
                         }
                     }
                 }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
 
-                // Routes Card
-                if !session.routes.isEmpty {
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Routes (\(session.routes.count))")
-                            .font(.title2)
-                            .fontWeight(.bold)
-                            .padding(.horizontal)
-
-                        ForEach(Array(session.routes.enumerated()), id: \.element.id) { index, route in
-                            RouteDetailCard(route: route, index: index, environment: session.environment ?? .indoor)
-                        }
-                    }
-                }
-
-                // Notes Card
+                // Notes Section
                 if let notes = session.notes, !notes.isEmpty {
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Notes")
-                            .font(.title2)
-                            .fontWeight(.bold)
+                            .font(.headline)
+                            .padding(.horizontal)
 
                         Text(notes)
                             .font(.body)
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
-                            .background(Color(.systemGray6))
-                            .cornerRadius(12)
+                            .background(Color(.systemBackground))
+                            .cornerRadius(16)
+                            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+                            .padding(.horizontal)
                     }
                 }
+
+                Spacer(minLength: 20)
             }
-            .padding()
+            .padding(.vertical)
         }
-        .navigationTitle("Session")
+        .background(Color(.systemGroupedBackground))
+        .navigationTitle("Session Details")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -116,6 +176,63 @@ struct SessionDetailView: View {
             EditSessionView(session: session)
                 .environment(\.managedObjectContext, viewContext)
         }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
+                animateCharts = true
+            }
+        }
+    }
+
+    // MARK: - Computed Properties
+
+    private var completedRoutes: [ClimbingRoute] {
+        session.routes.filter { route in
+            route.result == .onsight || route.result == .flash || route.result == .send
+        }
+    }
+
+    private var completedRoutesCount: Int {
+        completedRoutes.count
+    }
+
+    private var highestGrade: String {
+        let completed = completedRoutes.compactMap { $0.difficulty }
+        if completed.isEmpty { return "-" }
+
+        // Separate bouldering and sport grades
+        let boulderingGrades = completed.filter { $0.climbingType == .bouldering }
+        let sportGrades = completed.filter { $0.climbingType == .sport }
+
+        var result: [String] = []
+
+        if let maxBouldering = boulderingGrades.max(by: {
+            RouteDifficulty.boulderingGrades.firstIndex(of: $0) ?? 0 <
+            RouteDifficulty.boulderingGrades.firstIndex(of: $1) ?? 0
+        }) {
+            result.append(maxBouldering.rawValue)
+        }
+
+        if let maxSport = sportGrades.max(by: {
+            RouteDifficulty.sportGrades.firstIndex(of: $0) ?? 0 <
+            RouteDifficulty.sportGrades.firstIndex(of: $1) ?? 0
+        }) {
+            result.append(maxSport.rawValue)
+        }
+
+        return result.isEmpty ? "-" : result.joined(separator: " / ")
+    }
+
+    private var averageAttempts: String {
+        let routesWithAttempts = session.routes.compactMap { $0.attempts }
+        guard !routesWithAttempts.isEmpty else { return "-" }
+        let avg = Double(routesWithAttempts.reduce(0, +)) / Double(routesWithAttempts.count)
+        return String(format: "%.1f", avg)
+    }
+
+    private var completionRate: String {
+        guard !session.routes.isEmpty else { return "-" }
+        let rate = Double(completedRoutesCount) / Double(session.routes.count) * 100
+        return String(format: "%.0f%%", rate)
     }
 
     private var formattedDate: String {
@@ -126,89 +243,251 @@ struct SessionDetailView: View {
     }
 }
 
+// MARK: - Supporting Views
+
+struct StatCard: View {
+    let value: String
+    let label: String
+    let color: Color
+
+    var body: some View {
+        VStack(spacing: 8) {
+            Text(value)
+                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .foregroundColor(color)
+
+            Text(label)
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 20)
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+}
+
+struct CompletionStatCard: View {
+    let title: String
+    let value: String
+    let subtitle: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+
+            HStack(alignment: .firstTextBaseline, spacing: 4) {
+                Text(value)
+                    .font(.system(size: 28, weight: .bold, design: .rounded))
+                    .foregroundColor(.primary)
+
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
+    }
+}
+
+struct InfoRow: View {
+    let icon: String
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(.blue)
+                .frame(width: 32)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(label)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                Text(value)
+                    .font(.body)
+                    .fontWeight(.medium)
+            }
+
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+struct GradeDistributionChart: View {
+    let routes: [ClimbingRoute]
+
+    var gradeData: [(grade: String, count: Int, result: RouteResult)] {
+        var distribution: [String: [RouteResult]] = [:]
+
+        for route in routes {
+            guard let difficulty = route.difficulty,
+                  let result = route.result else { continue }
+
+            let grade = difficulty.rawValue
+            if distribution[grade] == nil {
+                distribution[grade] = []
+            }
+            distribution[grade]?.append(result)
+        }
+
+        var result: [(String, Int, RouteResult)] = []
+        for (grade, results) in distribution {
+            for res in results {
+                result.append((grade, 1, res))
+            }
+        }
+
+        return result.sorted { (item1: (grade: String, count: Int, result: RouteResult), item2: (grade: String, count: Int, result: RouteResult)) -> Bool in
+            // Sort by grade level
+            let allGrades = RouteDifficulty.boulderingGrades + RouteDifficulty.sportGrades
+            let index1 = allGrades.firstIndex { $0.rawValue == item1.grade } ?? 0
+            let index2 = allGrades.firstIndex { $0.rawValue == item2.grade } ?? 0
+            return index1 < index2
+        }
+    }
+
+    var body: some View {
+        if #available(iOS 16.0, *) {
+            Chart {
+                ForEach(Array(gradeData.enumerated()), id: \.offset) { index, item in
+                    BarMark(
+                        x: .value("Grade", item.grade),
+                        y: .value("Count", item.count)
+                    )
+                    .foregroundStyle(by: .value("Result", item.result.rawValue))
+                }
+            }
+            .chartForegroundStyleScale([
+                "Onsight": Color.green,
+                "Flash": Color.blue,
+                "Send": Color.orange,
+                "Fail": Color.red
+            ])
+            .chartXAxis {
+                AxisMarks { value in
+                    AxisValueLabel()
+                        .font(.caption2)
+                }
+            }
+            .chartYAxis {
+                AxisMarks { value in
+                    AxisGridLine()
+                    AxisValueLabel()
+                }
+            }
+        } else {
+            // Fallback for iOS 15
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Grade distribution requires iOS 16+")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .padding()
+            }
+        }
+    }
+}
+
 struct RouteDetailCard: View {
     let route: ClimbingRoute
     let index: Int
     let environment: ClimbingEnvironment
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            // Header
-            HStack {
-                Text("Route \(index + 1)")
-                    .font(.headline)
-                    .fontWeight(.semibold)
-                Spacer()
-                if let result = route.result {
-                    Text(result.emoji)
-                        .font(.title3)
-                }
+        HStack(spacing: 16) {
+            // Result Indicator
+            if let result = route.result {
+                Circle()
+                    .fill(resultColor(result))
+                    .frame(width: 12, height: 12)
             }
 
-            // Details Grid
-            VStack(alignment: .leading, spacing: 8) {
-                if let difficulty = route.difficulty {
-                    DetailRow(label: "Difficulty", value: difficulty.rawValue)
+            VStack(alignment: .leading, spacing: 6) {
+                // Route header
+                HStack {
+                    Text("Route \(index + 1)")
+                        .font(.headline)
+
+                    if let difficulty = route.difficulty {
+                        Text(difficulty.rawValue)
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.blue)
+                    }
+
+                    Spacer()
+
+                    if let result = route.result {
+                        HStack(spacing: 4) {
+                            Text(result.emoji)
+                                .font(.body)
+                            Text(result.rawValue)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
                 }
 
-                // Color or Name based on environment
+                // Color or Name
                 if environment == .indoor {
                     if let color = route.color {
-                        HStack {
-                            Text("Color")
-                                .font(.subheadline)
+                        HStack(spacing: 6) {
+                            Circle()
+                                .fill(color.color)
+                                .frame(width: 16, height: 16)
+                                .overlay(
+                                    Circle()
+                                        .stroke(color == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+                                )
+                            Text(color.rawValue)
+                                .font(.caption)
                                 .foregroundColor(.secondary)
-                            Spacer()
-                            HStack(spacing: 6) {
-                                Circle()
-                                    .fill(color.color)
-                                    .frame(width: 20, height: 20)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(color == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-                                    )
-                                Text(color.rawValue)
-                                    .font(.body)
-                            }
                         }
                     }
                 } else {
                     if let name = route.name, !name.isEmpty {
-                        DetailRow(label: "Route Name", value: name)
+                        Text(name)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
                 }
 
-                if let result = route.result {
-                    DetailRow(label: "Result", value: result.rawValue)
-                }
-
+                // Attempts
                 if let attempts = route.attempts {
-                    DetailRow(label: "Attempts", value: "\(attempts)")
+                    Text("\(attempts) attempt\(attempts == 1 ? "" : "s")")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
         }
         .padding()
-        .background(Color(.systemGray6))
+        .background(Color(.systemBackground))
         .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
-}
 
-struct DetailRow: View {
-    let label: String
-    let value: String
-
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            Spacer()
-            Text(value)
-                .font(.body)
-                .fontWeight(.medium)
+    private func resultColor(_ result: RouteResult) -> Color {
+        switch result {
+        case .onsight: return .green
+        case .flash: return .blue
+        case .send: return .orange
+        case .fail: return .red
         }
     }
 }
+
+// MARK: - Preview
 
 #Preview {
     NavigationView {
@@ -226,6 +505,14 @@ extension PersistenceController {
         session.duration = 120
         session.mood = "💪"
         session.notes = "Great session today! Sent my project route."
+
+        // Add sample routes for preview
+        var routes: [ClimbingRoute] = []
+        routes.append(ClimbingRoute(difficulty: .v3, attempts: 2, result: .send, color: .blue, name: nil))
+        routes.append(ClimbingRoute(difficulty: .v4, attempts: 1, result: .flash, color: .red, name: nil))
+        routes.append(ClimbingRoute(difficulty: .v5, attempts: 5, result: .send, color: .green, name: nil))
+        session.routes = routes
+
         return session
     }
 }
