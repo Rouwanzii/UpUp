@@ -257,7 +257,21 @@ struct RouteEntryView: View {
     //@Binding var routes: [ClimbingRoute]
     //let onDelete: () -> Void
 
-    @State private var selectedClimbingType: ClimbingType = .bouldering
+    @State private var selectedClimbingType: ClimbingType
+
+    init(route: Binding<ClimbingRoute>, previousRouteType: ClimbingType? = nil) {
+        self._route = route
+        self.previousRouteType = previousRouteType
+
+        // Initialize selectedClimbingType based on route's difficulty or previous route type
+        if let difficulty = route.wrappedValue.difficulty {
+            self._selectedClimbingType = State(initialValue: difficulty.climbingType)
+        } else if let previousType = previousRouteType {
+            self._selectedClimbingType = State(initialValue: previousType)
+        } else {
+            self._selectedClimbingType = State(initialValue: .bouldering)
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -398,14 +412,6 @@ struct RouteEntryView: View {
                 }
             }
         }
-        .onAppear {
-            // Initialize climbing type from route or previous route
-            if let difficulty = route.difficulty {
-                selectedClimbingType = difficulty.climbingType
-            } else if let previousType = previousRouteType {
-                selectedClimbingType = previousType
-            }
-        }
         /*
         .padding(.horizontal)
         .background(Color.gray.opacity(0.05))
@@ -501,24 +507,9 @@ struct RoutesSection: View {
     }
 
     private func addNewRoute() {
-        // Create new route with default climbing type from previous route
-        var newRoute = ClimbingRoute()
-
-        // If there's a previous route with a difficulty, use its climbing type
-        if let lastRoute = routes.last,
-           let lastDifficulty = lastRoute.difficulty {
-            // Set a default difficulty matching the previous route's type
-            // This will make the RouteEntryView initialize with the correct type
-            if lastDifficulty.climbingType == .bouldering {
-                // Don't set a specific difficulty, just let the type be inferred
-                // The selectedClimbingType in RouteEntryView will need to be initialized
-                newRoute.difficulty = nil
-            } else {
-                newRoute.difficulty = nil
-            }
-        }
-
-        routes.append(newRoute)
+        // Create new route - the RouteEntryView will automatically
+        // default to the previous route's type via the previousRouteType parameter
+        routes.append(ClimbingRoute())
     }
 }
 

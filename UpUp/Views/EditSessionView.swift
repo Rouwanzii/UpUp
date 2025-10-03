@@ -13,7 +13,7 @@ struct EditSessionView: View {
     @State private var notes: String
     @State private var durationHours: Double
     @State private var routes: [ClimbingRoute]
-    @State private var selectedEnvironment: ClimbingEnvironment?
+    @State private var selectedEnvironment: ClimbingEnvironment
     @State private var locationText: String
 
     let moods = ["😊", "💪", "🔥", "😤", "😭", "⚡", "🥵", "😎", "🎯", "👑"]
@@ -26,7 +26,7 @@ struct EditSessionView: View {
         self._notes = State(initialValue: session.notes ?? "")
         self._durationHours = State(initialValue: Double(session.duration) / 60.0)
         self._routes = State(initialValue: session.routes.isEmpty ? [ClimbingRoute()] : session.routes)
-        self._selectedEnvironment = State(initialValue: session.environment)
+        self._selectedEnvironment = State(initialValue: session.environment ?? .indoor)
         self._locationText = State(initialValue: session.location ?? "")
     }
 
@@ -35,13 +35,29 @@ struct EditSessionView: View {
             Form {
                     DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
+                
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Where did you climb?")
+                        .bold()
 
+                    Picker("Environment", selection: $selectedEnvironment) {
+                        ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                            Text(env.rawValue).tag(env)
+                        }
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+
+                    TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                }
+                .padding(.vertical, 2)
+                
                     HStack {
-                        Text("Duration")
+                        Text("How long is this session?")
                             .bold()
                         Spacer()
 
-                        HStack(spacing: 12) {
+                        HStack(spacing: 1) {
                             Button(action: {
                                 if durationHours > 0.5 {
                                     durationHours -= 0.5
@@ -70,7 +86,7 @@ struct EditSessionView: View {
                     
 
                     VStack(alignment: .leading) {
-                        Text("How was your session?")
+                        Text("How do you feel?")
                             .bold()
                         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 5)) {
                             ForEach(moods, id: \.self) { mood in
@@ -92,24 +108,6 @@ struct EditSessionView: View {
                 RoutesSection(routes: $routes)
                 .padding(.vertical, 2)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Environment (optional)")
-                        .bold()
-
-                    Picker("Environment", selection: $selectedEnvironment) {
-                        Text("None").tag(nil as ClimbingEnvironment?)
-                        ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
-                            Text(env.rawValue).tag(env as ClimbingEnvironment?)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-
-                    if let environment = selectedEnvironment {
-                        TextField(environment.locationPlaceholder, text: $locationText)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                }
-                .padding(.vertical, 2)
 
                 VStack(alignment: .leading) {
                     Text("Notes (optional)")

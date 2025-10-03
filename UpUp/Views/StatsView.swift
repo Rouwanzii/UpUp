@@ -317,8 +317,13 @@ struct QuickLogView: View {
     @State private var notes = ""
     @State private var durationHours: Double = 1.0
     @State private var routes: [ClimbingRoute] = [ClimbingRoute()]
-    @State private var selectedEnvironment: ClimbingEnvironment? = nil
+    @State private var selectedEnvironment: ClimbingEnvironment = .indoor
     @State private var locationText = ""
+
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \ClimbingSession.date, ascending: false)],
+        animation: .default)
+    private var sessions: FetchedResults<ClimbingSession>
 
     let moods = ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
 
@@ -332,6 +337,22 @@ struct QuickLogView: View {
                     .fontWeight(.bold)
                     .padding(.top)
 */
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Where did you climb?")
+                            .bold()
+
+                        Picker("Environment", selection: $selectedEnvironment) {
+                            ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
+                                Text(env.rawValue).tag(env)
+                            }
+                        }
+                        .pickerStyle(SegmentedPickerStyle())
+
+                        TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                    }
+                    .padding(.vertical, 2)
+                    
                 HStack {
                     Text("how long is your session")
                         .bold()
@@ -387,25 +408,6 @@ struct QuickLogView: View {
 
                 RoutesSection(routes: $routes)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Environment (optional)")
-                        .font(.headline)
-                        .bold()
-
-                    Picker("Environment", selection: $selectedEnvironment) {
-                        Text("None").tag(nil as ClimbingEnvironment?)
-                        ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
-                            Text(env.rawValue).tag(env as ClimbingEnvironment?)
-                        }
-                    }
-                    .pickerStyle(SegmentedPickerStyle())
-
-                    if let environment = selectedEnvironment {
-                        TextField(environment.locationPlaceholder, text: $locationText)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                    }
-                }
-
                 VStack(alignment: .leading, spacing: 12) {
                         Text("Notes (optional)")
                             .font(.headline)
@@ -445,6 +447,15 @@ struct QuickLogView: View {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Cancel") {
                         dismiss()
+                    }
+                }
+            }
+            .onAppear {
+                // Set default environment from last session
+                if let lastSession = sessions.first {
+                    if let lastEnvironment = lastSession.environment {
+                        selectedEnvironment = lastEnvironment
+                        locationText = lastSession.location ?? ""
                     }
                 }
             }
