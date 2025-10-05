@@ -39,6 +39,11 @@ struct LogView: View {
                 .disabled(!canSave)
                 .padding()
             }
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    hideKeyboard()
+                }
+            )
             .navigationTitle("Log Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -68,6 +73,8 @@ struct LogView: View {
     }
 
     private func saveSession() {
+        hideKeyboard()
+
         let newSession = ClimbingSession(context: viewContext)
         newSession.id = UUID()
         sessionData.save(to: newSession)

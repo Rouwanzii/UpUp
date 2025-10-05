@@ -258,16 +258,19 @@ struct RouteEntryView: View {
     @Binding var route: ClimbingRoute
     var previousRouteType: ClimbingType?
     var environment: ClimbingEnvironment
+    let dismissKeyboard: () -> Void
     //@Binding var routes: [ClimbingRoute]
     //let onDelete: () -> Void
 
     @State private var selectedClimbingType: ClimbingType
     @State private var routeNameText: String = ""
+    @FocusState private var isRouteNameFocused: Bool
 
-    init(route: Binding<ClimbingRoute>, previousRouteType: ClimbingType? = nil, environment: ClimbingEnvironment = .indoor) {
+    init(route: Binding<ClimbingRoute>, previousRouteType: ClimbingType? = nil, environment: ClimbingEnvironment = .indoor, dismissKeyboard: @escaping () -> Void = {}) {
         self._route = route
         self.previousRouteType = previousRouteType
         self.environment = environment
+        self.dismissKeyboard = dismissKeyboard
 
         // Initialize selectedClimbingType based on route's difficulty or previous route type
         if let difficulty = route.wrappedValue.difficulty {
@@ -297,6 +300,8 @@ struct RouteEntryView: View {
                 .pickerStyle(SegmentedPickerStyle())
                 .onChange(of: selectedClimbingType) {
                     route.difficulty = nil
+                    isRouteNameFocused = false
+                    dismissKeyboard()
                 }
             }
 
@@ -310,13 +315,21 @@ struct RouteEntryView: View {
                     DifficultyPickerView(
                         selectedDifficulty: $route.difficulty,
                         difficulties: RouteDifficulty.boulderingGrades,
-                        placeholder: "Select V-grade"
+                        placeholder: "Select V-grade",
+                        dismissKeyboard: {
+                            isRouteNameFocused = false
+                            dismissKeyboard()
+                        }
                     )
                 } else {
                     DifficultyPickerView(
                         selectedDifficulty: $route.difficulty,
                         difficulties: RouteDifficulty.sportGrades,
-                        placeholder: "Select 5.x grade"
+                        placeholder: "Select 5.x grade",
+                        dismissKeyboard: {
+                            isRouteNameFocused = false
+                            dismissKeyboard()
+                        }
                     )
                 }
             }
@@ -333,6 +346,8 @@ struct RouteEntryView: View {
                             ForEach(RouteColor.allCases, id: \.self) { routeColor in
                                 Button(action: {
                                     route.color = routeColor
+                                    isRouteNameFocused = false
+                                    dismissKeyboard()
                                 }) {
                                     VStack(spacing: 4) {
                                         Circle()
@@ -364,6 +379,7 @@ struct RouteEntryView: View {
 
                     TextField("Enter route name", text: $routeNameText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .focused($isRouteNameFocused)
                         .onChange(of: routeNameText) {
                             route.name = routeNameText.isEmpty ? nil : routeNameText
                         }
@@ -381,6 +397,8 @@ struct RouteEntryView: View {
                         ForEach(RouteResult.allCases, id: \.self) { result in
                             Button(action: {
                                 route.result = result
+                                isRouteNameFocused = false
+                                dismissKeyboard()
                             }) {
                                 Text(result.displayName)
                                     .font(.subheadline)
@@ -408,6 +426,8 @@ struct RouteEntryView: View {
                             ForEach(1...10, id: \.self) { attempt in
                                 Button(action: {
                                     route.attempts = attempt
+                                    isRouteNameFocused = false
+                                    dismissKeyboard()
                                 }) {
                                     Text("\(attempt)")
                                         .font(.subheadline)
@@ -432,6 +452,7 @@ struct DifficultyPickerView: View {
     @Binding var selectedDifficulty: RouteDifficulty?
     let difficulties: [RouteDifficulty]
     let placeholder: String
+    let dismissKeyboard: () -> Void
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -448,6 +469,7 @@ struct DifficultyPickerView: View {
                         .foregroundColor(selectedDifficulty == difficulty ? .blue : .primary)
                         .onTapGesture {
                             selectedDifficulty = difficulty
+                            dismissKeyboard()
                         }
                 }
             }
@@ -459,6 +481,7 @@ struct DifficultyPickerView: View {
 struct RoutesSection: View {
     @Binding var routes: [ClimbingRoute]
     var environment: ClimbingEnvironment
+    let dismissKeyboard: () -> Void
 
     var body: some View {
         VStack(spacing: 12) {
@@ -484,13 +507,17 @@ struct RoutesSection: View {
                         RouteEntryView(
                             route: $routes[bindingIndex],
                             previousRouteType: bindingIndex > 0 ? routes[bindingIndex - 1].difficulty?.climbingType : nil,
-                            environment: environment
+                            environment: environment,
+                            dismissKeyboard: dismissKeyboard
                         )
                     }
                 }
                 .padding(16)
-                .background(Color(.systemBackground))
-                .cornerRadius(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.secondarySystemGroupedBackground))
+                        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                )
             }
 
             // Add Route Button
@@ -499,13 +526,20 @@ struct RoutesSection: View {
             }) {
                 HStack {
                     Image(systemName: "plus.circle.fill")
+                        .font(.body)
                     Text("Add Route")
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 12)
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(8)
+                .padding(.vertical, 14)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color.green.opacity(0.1))
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(Color.green.opacity(0.3), style: StrokeStyle(lineWidth: 1.5, dash: [5, 3]))
+                )
             }
             .foregroundColor(.green)
             .buttonStyle(BorderlessButtonStyle())

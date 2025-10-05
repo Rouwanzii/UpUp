@@ -1,6 +1,20 @@
 import SwiftUI
 import CoreData
 
+// MARK: - Keyboard Dismissal Helper
+
+extension View {
+    func hideKeyboard() {
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+    }
+
+    func dismissKeyboardOnTap() -> some View {
+        self.onTapGesture {
+            hideKeyboard()
+        }
+    }
+}
+
 // MARK: - Unified Session Log Form Component
 
 struct SessionLogForm: View {
@@ -15,6 +29,13 @@ struct SessionLogForm: View {
     let themeColor: Color
     let moods: [String]
     let showDatePicker: Bool
+
+    @FocusState private var focusedField: Field?
+
+    enum Field {
+        case location
+        case notes
+    }
 
     init(
         selectedDate: Binding<Date>,
@@ -70,29 +91,32 @@ struct SessionLogForm: View {
                     TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .cornerRadius(8)
+                        .focused($focusedField, equals: .location)
                 }
                 .padding(.vertical, 4)
 
                 // Duration
-                DurationPicker(durationHours: $durationHours, themeColor: themeColor)
+                DurationPicker(durationHours: $durationHours, themeColor: themeColor, dismissKeyboard: { focusedField = nil })
                     .padding(.vertical, 4)
 
                 // Mood
-                MoodPicker(selectedMood: $selectedMood, moods: moods, themeColor: themeColor)
+                MoodPicker(selectedMood: $selectedMood, moods: moods, themeColor: themeColor, dismissKeyboard: { focusedField = nil })
                     .padding(.vertical, 4)
             }
 
             // Routes Section
             Section(header: Text("Routes")) {
-                RoutesSection(routes: $routes, environment: selectedEnvironment)
+                RoutesSection(routes: $routes, environment: selectedEnvironment, dismissKeyboard: { focusedField = nil })
             }
 
             // Notes Section
             Section(header: Text("Notes (Optional)")) {
                 TextEditor(text: $notes)
                     .frame(minHeight: 80)
+                    .focused($focusedField, equals: .notes)
             }
         }
+        .scrollDismissesKeyboard(.interactively)
     }
 }
 
@@ -101,6 +125,7 @@ struct SessionLogForm: View {
 struct DurationPicker: View {
     @Binding var durationHours: Double
     let themeColor: Color
+    let dismissKeyboard: () -> Void
 
     var body: some View {
         HStack {
@@ -111,6 +136,7 @@ struct DurationPicker: View {
 
             HStack(spacing: 0) {
                 Button(action: {
+                    dismissKeyboard()
                     if durationHours > 0.5 {
                         durationHours -= 0.5
                     }
@@ -126,6 +152,7 @@ struct DurationPicker: View {
                     .frame(width: 60)
 
                 Button(action: {
+                    dismissKeyboard()
                     durationHours += 0.5
                 }) {
                     Image(systemName: "plus.circle.fill")
@@ -144,6 +171,7 @@ struct MoodPicker: View {
     @Binding var selectedMood: String
     let moods: [String]
     let themeColor: Color
+    let dismissKeyboard: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -154,6 +182,7 @@ struct MoodPicker: View {
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: moods.count > 8 ? 5 : 4), spacing: 12) {
                 ForEach(moods, id: \.self) { mood in
                     Button(action: {
+                        dismissKeyboard()
                         selectedMood = mood
                     }) {
                         Text(mood)
@@ -209,12 +238,20 @@ struct SessionData {
     }
 
     func save(to session: ClimbingSession) {
+        // Save basic Core Data properties
         session.date = selectedDate
         session.duration = Int32(durationHours * 60)
         session.mood = selectedMood
         session.notes = notes.isEmpty ? nil : notes
+
+        // Save UserDefaults-based properties (routes, environment, location)
         session.routes = routes
         session.environment = selectedEnvironment
         session.location = locationText.isEmpty ? nil : locationText
+
+        // Force Core Data to recognize the change by touching a Core Data property
+        // This triggers @FetchRequest updates even though routes/environment/location use UserDefaults
+        session.willChangeValue(forKey: "duration")
+        session.didChangeValue(forKey: "duration")
     }
 }

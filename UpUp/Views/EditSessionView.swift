@@ -44,6 +44,11 @@ struct EditSessionView: View {
                 .disabled(!canSave)
                 .padding()
             }
+            .simultaneousGesture(
+                TapGesture().onEnded {
+                    hideKeyboard()
+                }
+            )
             .navigationTitle("Edit Session")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -61,10 +66,18 @@ struct EditSessionView: View {
     }
 
     private func saveChanges() {
+        hideKeyboard()
+
         sessionData.save(to: session)
 
         do {
-            try viewContext.save()
+            // Ensure context processes pending changes
+            viewContext.processPendingChanges()
+
+            if viewContext.hasChanges {
+                try viewContext.save()
+            }
+
             dismiss()
         } catch {
             print("Error saving changes: \(error)")

@@ -516,7 +516,7 @@ struct MonthlyCalendarPageView: View {
         ScrollView {
             VStack(spacing: 20) {
                 MonthlyCalendar(sessions: Array(sessions), selectedDate: $selectedDate)
-                    .padding(.horizontal, 20)
+                    .padding()
 
                 // Selected Date Session Display
                 VStack(alignment: .leading, spacing: 12) {
@@ -568,7 +568,7 @@ struct MonthlyCalendarPageView: View {
             .padding(.vertical)
         }
         .navigationTitle("Monthly Calendar")
-        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarTitleDisplayMode(.automatic)
         .sheet(isPresented: $showingQuickLog) {
             QuickLogView(selectedDate: selectedDate)
         }

@@ -4,10 +4,10 @@ import Charts
 
 struct SessionDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @ObservedObject var session: ClimbingSession
     @State private var showingEditView = false
     @State private var animateCharts = false
-
-    let session: ClimbingSession
+    @State private var refreshID = UUID()
 
     var body: some View {
         ScrollView {
@@ -176,6 +176,16 @@ struct SessionDetailView: View {
             EditSessionView(session: session)
                 .environment(\.managedObjectContext, viewContext)
         }
+        .onChange(of: showingEditView) { oldValue, newValue in
+            // Refresh the view when returning from edit sheet
+            if !newValue {
+                // Force refresh by updating the ID
+                refreshID = UUID()
+                // Refresh the object from Core Data
+                viewContext.refresh(session, mergeChanges: true)
+            }
+        }
+        .id(refreshID)
         .onAppear {
             withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
                 animateCharts = true
