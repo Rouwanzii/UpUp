@@ -30,7 +30,6 @@ struct MonthlyCalendar: View {
                         .foregroundColor(.blue)
                 }
             }
-            .padding(.horizontal)
 
             // Day headers
             HStack {
@@ -53,13 +52,8 @@ struct MonthlyCalendar: View {
             // Monthly summary
             HStack {
                 VStack(alignment: .leading) {
-                    /*
-                    Text("This Month")
-                        .font(.headline)
-                     */
                     Text("\(sessionsThisMonth) sessions")
                         .font(.headline)
-                        //.foregroundColor(.secondary)
                 }
 
                 Spacer()
@@ -67,21 +61,12 @@ struct MonthlyCalendar: View {
                 VStack(alignment: .trailing) {
                     Text(String(format: "%.1f hrs", totalHoursThisMonth))
                         .font(.headline)
-                        //.fontWeight(.bold)
-                    /*
-                    Text("total time")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                     */
                 }
             }
             .padding()
             .background(Color.green.opacity(0.1))
             .cornerRadius(10)
         }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(12)
         .gesture(
             DragGesture()
                 .onEnded { value in

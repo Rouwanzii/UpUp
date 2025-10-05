@@ -47,12 +47,6 @@ struct HomeView: View {
                 VStack(spacing: 20) {
                     // Motivational Quote
                     VStack {
-                        /*
-                        Text(currentEmoji)
-                            .font(.headline)
-                            .padding(.top,20)
-                            .padding(.bottom,10)
-                         */
                         Text(currentQuote)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -73,19 +67,14 @@ struct HomeView: View {
                         onQuickLog: {showingTodayQuickLog = true}
                     )
                     .padding(.horizontal, 20)
-/*
-                    // Quick Stats
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 10) {
-                        /*
-                        QuickStatCard(value: "\(sessions.count)", title: "Total Sessions")
-                        QuickStatCard(value: String(format: "%.1f", totalHours), title: "Total Hours")
-                         */
-                        QuickStatCard(value: "\(sessionsThisMonth)", title: "Sessions This Month")
-                        QuickStatCard(value: "\(sessionsThisWeek)", title: "Sessions This Week")
+
+                    // Monthly Calendar Card
+                    NavigationLink(destination: MonthlyCalendarPageView()) {
+                        MonthlyCalendarCardContent(sessionsThisMonth: sessionsThisMonth)
                     }
+                    .buttonStyle(PlainButtonStyle())
                     .padding(.horizontal, 20)
- */
-                    
+
                     // Recent Sessions
                     VStack(alignment: .leading, spacing: 12) {
                         Text("Recent Sessions")
@@ -303,13 +292,7 @@ struct TodayTrainingCard: View {
 struct TodayQuickLogView: View {
     @Environment(\.managedObjectContext) private var viewContext
     @Environment(\.dismiss) private var dismiss
-    @State private var duration = "60"
-    @State private var selectedMood = "💪"
-    @State private var notes = ""
-    @State private var durationHours: Double = 1.0
-    @State private var routes: [ClimbingRoute] = [ClimbingRoute()]
-    @State private var selectedEnvironment: ClimbingEnvironment = .indoor
-    @State private var locationText = ""
+    @State private var sessionData = SessionData(mood: "💪")
 
     @FetchRequest(
         sortDescriptors: [NSSortDescriptor(keyPath: \ClimbingSession.date, ascending: false)],
@@ -320,116 +303,31 @@ struct TodayQuickLogView: View {
 
     var body: some View {
         NavigationView {
-            Form {
-                // Session Details Section
-                Section(header: Text("Session Details")) {
-                    // Location
-                    VStack(alignment: .leading, spacing: 8) {
-                        HStack {
-                            Text("Where did you climb?")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                            Spacer()
-                            Picker("", selection: $selectedEnvironment) {
-                                ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
-                                    Text(env.rawValue).tag(env)
-                                }
-                            }
-                            .pickerStyle(MenuPickerStyle())
-                        }
-
-                        TextField(selectedEnvironment.locationPlaceholder, text: $locationText)
-                            .textFieldStyle(RoundedBorderTextFieldStyle())
-                            .cornerRadius(8)
-                    }
-                    .padding(.vertical, 4)
-
-                    // Duration
-                    HStack {
-                        Text("How long is your session?")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                        Spacer()
-
-                        HStack(spacing: 0) {
-                            Button(action: {
-                                if durationHours > 0.5 {
-                                    durationHours -= 0.5
-                                    duration = String(Int(durationHours * 60))
-                                }
-                            }) {
-                                Image(systemName: "minus.circle.fill")
-                                    .font(.title3)
-                                    .foregroundColor(.orange)
-                            }
-                            .buttonStyle(BorderlessButtonStyle())
-
-                            Text("\(durationHours, specifier: "%.1f") h")
-                                .font(.body)
-                                .frame(width: 60)
-
-                            Button(action: {
-                                durationHours += 0.5
-                                duration = String(Int(durationHours * 60))
-                            }) {
-                                Image(systemName: "plus.circle.fill")
-                                    .font(.title3)
-                                    .foregroundColor(.orange)
-                            }
-                            .buttonStyle(BorderlessButtonStyle())
-                        }
-                    }
-                    .padding(.vertical, 4)
-
-                    // Mood
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("How do you feel?")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-
-                        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 12) {
-                            ForEach(moods, id: \.self) { mood in
-                                Button(action: {
-                                    selectedMood = mood
-                                }) {
-                                    Text(mood)
-                                        .font(.title2)
-                                        .frame(width: 50, height: 50)
-                                        .background(selectedMood == mood ? Color.orange.opacity(0.3) : Color.gray.opacity(0.1))
-                                        .clipShape(Circle())
-                                }
-                                .buttonStyle(PlainButtonStyle())
-                            }
-                        }
-                    }
-                    .padding(.vertical, 4)
-                }
-
-                // Routes Section
-                Section(header: Text("Routes")) {
-                    RoutesSection(routes: $routes, environment: selectedEnvironment)
-                }
-
-                // Notes Section
-                Section(header: Text("Notes (Optional)")) {
-                    TextEditor(text: $notes)
-                        .frame(minHeight: 80)
-                }
+            VStack(spacing: 0) {
+                SessionLogForm(
+                    selectedDate: $sessionData.selectedDate,
+                    durationHours: $sessionData.durationHours,
+                    selectedMood: $sessionData.selectedMood,
+                    notes: $sessionData.notes,
+                    routes: $sessionData.routes,
+                    selectedEnvironment: $sessionData.selectedEnvironment,
+                    locationText: $sessionData.locationText,
+                    themeColor: .orange,
+                    moods: moods,
+                    showDatePicker: false
+                )
 
                 // Save Button
-                Section {
-                    Button(action: saveSession) {
-                        Text("Save Session")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                            .background(Color.orange)
-                            .foregroundColor(.white)
-                            .cornerRadius(10)
-                    }
-                    .listRowInsets(EdgeInsets())
-                    .listRowBackground(Color.clear)
+                Button(action: saveSession) {
+                    Text("Save Session")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.orange)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
                 }
+                .padding()
             }
             .navigationTitle("Quick Log for Today")
             .navigationBarTitleDisplayMode(.inline)
@@ -441,29 +339,24 @@ struct TodayQuickLogView: View {
                 }
             }
             .onAppear {
-                // Set default environment from last session
-                if let lastSession = sessions.first {
-                    if let lastEnvironment = lastSession.environment {
-                        selectedEnvironment = lastEnvironment
-                        locationText = lastSession.location ?? ""
-                    }
-                }
+                loadDefaults()
+            }
+        }
+    }
+
+    private func loadDefaults() {
+        if let lastSession = sessions.first {
+            if let lastEnvironment = lastSession.environment {
+                sessionData.selectedEnvironment = lastEnvironment
+                sessionData.locationText = lastSession.location ?? ""
             }
         }
     }
 
     private func saveSession() {
-        guard let durationInt = Int32(duration), durationInt > 0 else { return }
-
         let newSession = ClimbingSession(context: viewContext)
         newSession.id = UUID()
-        newSession.date = Date()
-        newSession.duration = durationInt
-        newSession.mood = selectedMood
-        newSession.notes = notes.isEmpty ? nil : notes
-        newSession.routes = routes
-        newSession.environment = selectedEnvironment
-        newSession.location = locationText.isEmpty ? nil : locationText
+        sessionData.save(to: newSession)
 
         do {
             try viewContext.save()
@@ -574,6 +467,124 @@ struct HomeSessionRow: View {
             return "\(routes.count) route\(routes.count == 1 ? "" : "s")"
         } else {
             return routesWithDifficulty.prefix(3).joined(separator: ", ") + (routesWithDifficulty.count > 3 ? "..." : "")
+        }
+    }
+}
+
+struct MonthlyCalendarCardContent: View {
+    let sessionsThisMonth: Int
+
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: "calendar")
+                .font(.system(size: 36))
+                .foregroundColor(.blue)
+                .frame(width: 50, height: 50)
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Monthly Calendar")
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                Text("\(sessionsThisMonth) session\(sessionsThisMonth == 1 ? "" : "s") this month")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+
+            Spacer()
+
+            Image(systemName: "chevron.right")
+                .foregroundColor(.secondary)
+        }
+        .padding()
+        .background(Color.blue.opacity(0.1))
+        .cornerRadius(12)
+    }
+}
+
+struct MonthlyCalendarPageView: View {
+    @Environment(\.managedObjectContext) private var viewContext
+    @FetchRequest(
+        sortDescriptors: [NSSortDescriptor(keyPath: \ClimbingSession.date, ascending: false)],
+        animation: .default)
+    private var sessions: FetchedResults<ClimbingSession>
+
+    @State private var selectedDate: Date = Date()
+    @State private var showingQuickLog = false
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 20) {
+                MonthlyCalendar(sessions: Array(sessions), selectedDate: $selectedDate)
+                    .padding(.horizontal, 20)
+
+                // Selected Date Session Display
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Text("Sessions on \(selectedDateFormatted)")
+                            .font(.subheadline)
+                            .fontWeight(.semibold)
+                        Spacer()
+                        if sessionsForSelectedDate.isEmpty {
+                            Button("Quick Log") {
+                                showingQuickLog = true
+                            }
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.orange)
+                            .cornerRadius(8)
+                        }
+                    }
+
+                    if sessionsForSelectedDate.isEmpty {
+                        if selectedDate > Date() {
+                            Text("We are young, we still have tomorrow.")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .italic()
+                                .padding(.vertical, 8)
+                        } else {
+                            Text("No sessions recorded for this day")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .padding(.vertical, 8)
+                        }
+                    } else {
+                        LazyVStack(spacing: 8) {
+                            ForEach(sessionsForSelectedDate, id: \.id) { session in
+                                SessionRowForDate(session: session)
+                            }
+                        }
+                    }
+                }
+                .padding(.all, 16)
+                .background(Color.gray.opacity(0.05))
+                .cornerRadius(12)
+                .padding(.horizontal, 20)
+            }
+            .padding(.vertical)
+        }
+        .navigationTitle("Monthly Calendar")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingQuickLog) {
+            QuickLogView(selectedDate: selectedDate)
+        }
+    }
+
+    private var selectedDateFormatted: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        return formatter.string(from: selectedDate)
+    }
+
+    private var sessionsForSelectedDate: [ClimbingSession] {
+        let calendar = Calendar.current
+        return sessions.filter { session in
+            guard let sessionDate = session.date else { return false }
+            return calendar.isDate(sessionDate, inSameDayAs: selectedDate)
         }
     }
 }

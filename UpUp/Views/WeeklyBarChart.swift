@@ -41,7 +41,6 @@ struct WeeklyBarChart: View {
                 }
             }
             .padding()
-            .padding(.horizontal, 20)
             .padding(.top)
             .background(Color.gray.opacity(0.05))
             .cornerRadius(12)
@@ -51,7 +50,6 @@ struct WeeklyBarChart: View {
                 VStack(alignment: .leading) {
                     Text("\(sessionsThisWeek) sessions")
                         .font(.headline)
-                        //.foregroundColor(.secondary)
                 }
 
                 Spacer()
@@ -59,16 +57,9 @@ struct WeeklyBarChart: View {
                 VStack(alignment: .trailing) {
                     Text(String(format: "%.1f hrs", totalHoursThisWeek))
                         .font(.headline)
-                        //.fontWeight(.bold)
-                    /*
-                    Text("total time")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                     */
                 }
             }
             .padding()
-            .padding(.horizontal,20)
             .background(Color.green.opacity(0.1))
             .cornerRadius(10)
             .gesture(

@@ -10,9 +10,6 @@ struct SixMonthHeatmap: View {
             monthLabelsSection
             legendSection
         }
-        .padding()
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(12)
     }
 
     private var heatmapSection: some View {

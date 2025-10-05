@@ -33,19 +33,19 @@ struct SessionDetailView: View {
 
                 // Summary Stats Cards
                 HStack(spacing: 12) {
-                    StatCard(
+                    SessionStatCard(
                         value: "\(session.routes.count)",
                         label: "Total Routes",
                         color: .blue
                     )
 
-                    StatCard(
+                    SessionStatCard(
                         value: "\(completedRoutesCount)",
                         label: "Completed",
                         color: .green
                     )
 
-                    StatCard(
+                    SessionStatCard(
                         value: highestGrade,
                         label: "Highest Grade",
                         color: .orange
@@ -163,7 +163,7 @@ struct SessionDetailView: View {
             .padding(.vertical)
         }
         .background(Color(.systemGroupedBackground))
-        .navigationTitle("Session Details")
+        .navigationTitle(formattedDate)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -237,7 +237,7 @@ struct SessionDetailView: View {
 
     private var formattedDate: String {
         let formatter = DateFormatter()
-        formatter.dateStyle = .long
+        formatter.dateStyle = .medium
         formatter.timeStyle = .none
         return formatter.string(from: session.date ?? Date())
     }
@@ -245,7 +245,7 @@ struct SessionDetailView: View {
 
 // MARK: - Supporting Views
 
-struct StatCard: View {
+struct SessionStatCard: View {
     let value: String
     let label: String
     let color: Color
