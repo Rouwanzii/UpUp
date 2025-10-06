@@ -169,7 +169,7 @@ struct DifficultyDistributionChart: View {
         return data.sorted { (item1: (grade: String, count: Int, result: String), item2: (grade: String, count: Int, result: String)) -> Bool in
             let index1 = relevantGrades.firstIndex { $0.rawValue == item1.0 } ?? 0
             let index2 = relevantGrades.firstIndex { $0.rawValue == item2.0 } ?? 0
-            return index1 < index2
+            return index1 > index2
         }
     }
 
@@ -188,12 +188,14 @@ struct DifficultyDistributionChart: View {
                         .cornerRadius(4)
                     }
                 }
+                
                 .chartForegroundStyleScale([
                     "Onsight": Color.green,
                     "Flash": Color.blue,
                     "Send": Color.orange,
                     "Fail": Color.gray.opacity(0.2)
                 ])
+    
                 .chartXAxis {
                     AxisMarks(position: .bottom) { value in
                         AxisGridLine()

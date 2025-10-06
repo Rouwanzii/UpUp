@@ -135,10 +135,15 @@ struct HomeView: View {
                 Text("Great work! Your 1-hour training session has been logged for today.")
             }
             .sheet(isPresented: $showingDetailedLog) {
-                LogView()
+                SessionLogSheet(mode: .create, themeColor: DesignTokens.Colors.logbookAccent)
             }
             .sheet(isPresented: $showingTodayQuickLog) {
-                TodayQuickLogView()
+                SessionLogSheet(
+                    mode: .quickLog(Date()),
+                    themeColor: DesignTokens.Colors.homeAccent,
+                    showDatePicker: false,
+                    moods: ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
+                )
             }
         }
     }
@@ -198,29 +203,7 @@ struct HomeView: View {
     }
 }
 
-struct QuickStatCard: View {
-    let value: String
-    let title: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Text(value)
-                    .font(.title2)
-                    .fontWeight(.bold)
-                Spacer()
-                Text(title)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding()
-        .padding(.horizontal, 10)
-        .frame(maxWidth: .infinity, minHeight: 40, alignment: .leading)
-        .background(Color.gray.opacity(0.05))
-        .cornerRadius(10)
-    }
-}
+// QuickStatCard is now in Shared/Components/StatCards.swift
 
 struct TodayTrainingCard: View {
     @State private var currentEmoji = ""
@@ -241,6 +224,7 @@ struct TodayTrainingCard: View {
                         Text("Session Completed for Today!")
                             .font(.headline)
                             .fontWeight(.semibold)
+                            .padding(.bottom, 2)
                         Text("Great work on your training!")
                             .font(.subheadline)
                             .foregroundColor(.secondary)
@@ -289,83 +273,7 @@ struct TodayTrainingCard: View {
     }
 }
 
-struct TodayQuickLogView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-    @Environment(\.dismiss) private var dismiss
-    @State private var sessionData = SessionData(mood: "💪")
-
-    @FetchRequest(
-        sortDescriptors: [NSSortDescriptor(keyPath: \ClimbingSession.date, ascending: false)],
-        animation: .default)
-    private var sessions: FetchedResults<ClimbingSession>
-
-    let moods = ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 0) {
-                SessionLogForm(
-                    selectedDate: $sessionData.selectedDate,
-                    durationHours: $sessionData.durationHours,
-                    selectedMood: $sessionData.selectedMood,
-                    notes: $sessionData.notes,
-                    routes: $sessionData.routes,
-                    selectedEnvironment: $sessionData.selectedEnvironment,
-                    locationText: $sessionData.locationText,
-                    themeColor: .orange,
-                    moods: moods,
-                    showDatePicker: false
-                )
-
-                // Save Button
-                Button(action: saveSession) {
-                    Text("Save Session")
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.orange)
-                        .foregroundColor(.white)
-                        .cornerRadius(10)
-                }
-                .padding()
-            }
-            .navigationTitle("Quick Log for Today")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
-                        dismiss()
-                    }
-                }
-            }
-            .onAppear {
-                loadDefaults()
-            }
-        }
-    }
-
-    private func loadDefaults() {
-        if let lastSession = sessions.first {
-            if let lastEnvironment = lastSession.environment {
-                sessionData.selectedEnvironment = lastEnvironment
-                sessionData.locationText = lastSession.location ?? ""
-            }
-        }
-    }
-
-    private func saveSession() {
-        let newSession = ClimbingSession(context: viewContext)
-        newSession.id = UUID()
-        sessionData.save(to: newSession)
-
-        do {
-            try viewContext.save()
-            dismiss()
-        } catch {
-            print("Error saving session: \(error)")
-        }
-    }
-}
+// TodayQuickLogView has been replaced by SessionLogSheet
 
 struct HomeSessionRow: View {
     let session: ClimbingSession
@@ -446,7 +354,7 @@ struct HomeSessionRow: View {
             Text("Are you sure you want to delete this climbing session?")
         }
         .sheet(isPresented: $showingEditSheet) {
-            EditSessionView(session: session)
+            SessionLogSheet(mode: .edit(session), themeColor: .blue)
         }
     }
 
@@ -570,7 +478,7 @@ struct MonthlyCalendarPageView: View {
         .navigationTitle("Monthly Calendar")
         .navigationBarTitleDisplayMode(.automatic)
         .sheet(isPresented: $showingQuickLog) {
-            QuickLogView(selectedDate: selectedDate)
+            SessionLogSheet(mode: .quickLog(selectedDate), themeColor: DesignTokens.Colors.homeAccent, showDatePicker: false)
         }
     }
 

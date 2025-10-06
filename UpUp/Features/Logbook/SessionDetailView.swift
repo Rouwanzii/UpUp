@@ -4,8 +4,10 @@ import Charts
 
 struct SessionDetailView: View {
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.dismiss) private var dismiss
     @ObservedObject var session: ClimbingSession
     @State private var showingEditView = false
+    @State private var showingDeleteAlert = false
     @State private var animateCharts = false
     @State private var refreshID = UUID()
 
@@ -158,6 +160,25 @@ struct SessionDetailView: View {
                     }
                 }
 
+                // Delete Button
+                Button(action: {
+                    showingDeleteAlert = true
+                }) {
+                    HStack {
+                        Image(systemName: "trash")
+                            .font(.headline)
+                        Text("Delete Session")
+                            .font(.headline)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding()
+                    .background(Color.red.opacity(0.1))
+                    .foregroundColor(.red)
+                    .cornerRadius(DesignTokens.CornerRadius.medium)
+                }
+                .padding(.horizontal)
+                .padding(.top, DesignTokens.Padding.large)
+
                 Spacer(minLength: 20)
             }
             .padding(.vertical)
@@ -173,8 +194,7 @@ struct SessionDetailView: View {
             }
         }
         .sheet(isPresented: $showingEditView) {
-            EditSessionView(session: session)
-                .environment(\.managedObjectContext, viewContext)
+            SessionLogSheet(mode: .edit(session), themeColor: .blue)
         }
         .onChange(of: showingEditView) { oldValue, newValue in
             // Refresh the view when returning from edit sheet
@@ -186,6 +206,14 @@ struct SessionDetailView: View {
             }
         }
         .id(refreshID)
+        .alert("Delete Session", isPresented: $showingDeleteAlert) {
+            Button("Delete", role: .destructive) {
+                deleteSession()
+            }
+            Button("Cancel", role: .cancel) { }
+        } message: {
+            Text("Are you sure you want to delete this climbing session? This action cannot be undone.")
+        }
         .onAppear {
             withAnimation(.easeOut(duration: 0.6).delay(0.2)) {
                 animateCharts = true
@@ -251,89 +279,25 @@ struct SessionDetailView: View {
         formatter.timeStyle = .none
         return formatter.string(from: session.date ?? Date())
     }
+
+    // MARK: - Delete Method
+
+    private func deleteSession() {
+        // Delete the session from Core Data
+        viewContext.delete(session)
+
+        do {
+            try viewContext.save()
+            // Navigate back after successful deletion
+            dismiss()
+        } catch {
+            print("Error deleting session: \(error)")
+        }
+    }
 }
 
 // MARK: - Supporting Views
-
-struct SessionStatCard: View {
-    let value: String
-    let label: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(value)
-                .font(.system(size: 32, weight: .bold, design: .rounded))
-                .foregroundColor(color)
-
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 20)
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-    }
-}
-
-struct CompletionStatCard: View {
-    let title: String
-    let value: String
-    let subtitle: String
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(title)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-
-            HStack(alignment: .firstTextBaseline, spacing: 4) {
-                Text(value)
-                    .font(.system(size: 28, weight: .bold, design: .rounded))
-                    .foregroundColor(.primary)
-
-                Text(subtitle)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(16)
-        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
-    }
-}
-
-struct InfoRow: View {
-    let icon: String
-    let label: String
-    let value: String
-
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(.blue)
-                .frame(width: 32)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(label)
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                Text(value)
-                    .font(.body)
-                    .fontWeight(.medium)
-            }
-
-            Spacer()
-        }
-        .padding()
-    }
-}
+// SessionStatCard, CompletionStatCard, and InfoRow are now in Shared/Components/StatCards.swift
 
 struct GradeDistributionChart: View {
     let routes: [ClimbingRoute]
@@ -409,93 +373,7 @@ struct GradeDistributionChart: View {
     }
 }
 
-struct RouteDetailCard: View {
-    let route: ClimbingRoute
-    let index: Int
-    let environment: ClimbingEnvironment
-
-    var body: some View {
-        HStack(spacing: 16) {
-            // Result Indicator
-            if let result = route.result {
-                Circle()
-                    .fill(resultColor(result))
-                    .frame(width: 12, height: 12)
-            }
-
-            VStack(alignment: .leading, spacing: 6) {
-                // Route header
-                HStack {
-                    Text("Route \(index + 1)")
-                        .font(.headline)
-
-                    if let difficulty = route.difficulty {
-                        Text(difficulty.rawValue)
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(.blue)
-                    }
-
-                    Spacer()
-
-                    if let result = route.result {
-                        HStack(spacing: 4) {
-                            Text(result.emoji)
-                                .font(.body)
-                            Text(result.rawValue)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                }
-
-                // Color or Name
-                if environment == .indoor {
-                    if let color = route.color {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(color.color)
-                                .frame(width: 16, height: 16)
-                                .overlay(
-                                    Circle()
-                                        .stroke(color == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-                                )
-                            Text(color.rawValue)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                } else {
-                    if let name = route.name, !name.isEmpty {
-                        Text(name)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                // Attempts
-                if let attempts = route.attempts {
-                    Text("\(attempts) attempt\(attempts == 1 ? "" : "s")")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
-    }
-
-    private func resultColor(_ result: RouteResult) -> Color {
-        switch result {
-        case .onsight: return .green
-        case .flash: return .blue
-        case .send: return .orange
-        case .fail: return .red
-        }
-    }
-}
+// RouteDetailCard is now in Shared/Components/RouteComponents.swift
 
 // MARK: - Preview
 

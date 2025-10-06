@@ -76,7 +76,12 @@ struct HomeTabView: View {
                 }
             }
             .sheet(isPresented: $showingTodayQuickLog) {
-                TodayQuickLogView()
+                SessionLogSheet(
+                    mode: .quickLog(Date()),
+                    themeColor: DesignTokens.Colors.homeAccent,
+                    showDatePicker: false,
+                    moods: ["😊", "💪", "🔥", "😤", "⚡", "🥵", "😎", "🎯"]
+                )
             }
             .sheet(isPresented: $showingSettings) {
                 SettingsView()
@@ -175,30 +180,7 @@ struct QuickStatsSummary: View {
     }
 }
 
-struct StatSummaryCard: View {
-    let value: String
-    let label: String
-    let color: Color
-
-    var body: some View {
-        VStack(spacing: 8) {
-            Text(value)
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(color)
-
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-                .multilineTextAlignment(.center)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
-    }
-}
+// StatSummaryCard is now in Shared/Components/StatCards.swift
 
 struct RecentActivityPreview: View {
     let sessions: [ClimbingSession]

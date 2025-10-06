@@ -34,7 +34,7 @@ struct LogbookTabView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
 
-                    TextField("Search gym, location, or grade...", text: $searchText)
+                    TextField("Search location, notes, grade...", text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                         .focused($isSearchFocused)
                         .submitLabel(.search)
@@ -131,7 +131,7 @@ struct LogbookTabView: View {
                 }
             }
             .sheet(isPresented: $showingLogView) {
-                LogView()
+                SessionLogSheet(mode: .create, themeColor: DesignTokens.Colors.logbookAccent)
             }
         }
     }
@@ -158,6 +158,24 @@ struct LogbookTabView: View {
             filtered = filtered.filter { session in
                 // Search in location
                 if let location = session.location, location.lowercased().contains(searchLower) {
+                    return true
+                }
+
+                // Search in notes
+                if let notes = session.notes, notes.lowercased().contains(searchLower) {
+                    return true
+                }
+
+                // Search in environment (indoor/outdoor)
+                if let environment = session.environment {
+                    if environment.rawValue.lowercased().contains(searchLower) {
+                        return true
+                    }
+                }
+
+                // Search in climbing type (bouldering/sport)
+                let climbingTypes = session.routes.compactMap { $0.difficulty?.climbingType.rawValue.lowercased() }
+                if climbingTypes.contains(where: { $0.contains(searchLower) }) {
                     return true
                 }
 
@@ -382,7 +400,7 @@ struct TimelineSessionCard: View {
             Text("Are you sure you want to delete this climbing session?")
         }
         .sheet(isPresented: $showingEditSheet) {
-            EditSessionView(session: session)
+            SessionLogSheet(mode: .edit(session), themeColor: .blue)
         }
     }
 

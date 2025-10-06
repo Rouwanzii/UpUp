@@ -235,6 +235,17 @@ struct ProgressTrendsSection: View {
             }
             .padding(.horizontal, 20)
 
+            // Indoor vs Outdoor Ratio
+            if indoorOutdoorRatio.indoor > 0 || indoorOutdoorRatio.outdoor > 0 {
+                InsightCard(title: "Indoor vs Outdoor") {
+                    IndoorOutdoorRatioChart(
+                        indoor: indoorOutdoorRatio.indoor,
+                        outdoor: indoorOutdoorRatio.outdoor
+                    )
+                    .frame(height: 160)
+                }
+            }
+            
             // Climbing Type Selector
             ClimbingTypeSelector(selectedType: $selectedClimbingType)
                 .padding(.horizontal, 20)
@@ -255,17 +266,6 @@ struct ProgressTrendsSection: View {
                     climbingType: selectedClimbingType
                 )
                 .frame(height: 200)
-            }
-
-            // Indoor vs Outdoor Ratio
-            if indoorOutdoorRatio.indoor > 0 || indoorOutdoorRatio.outdoor > 0 {
-                InsightCard(title: "Indoor vs Outdoor") {
-                    IndoorOutdoorRatioChart(
-                        indoor: indoorOutdoorRatio.indoor,
-                        outdoor: indoorOutdoorRatio.outdoor
-                    )
-                    .frame(height: 160)
-                }
             }
         }
     }
