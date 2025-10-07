@@ -170,7 +170,7 @@ struct CustomDateRangeInlineView: View {
                 }
             }
 
-            VStack(spacing: 12) {
+            VStack {
                 HStack {
                     Text("From")
                         .font(.subheadline)
@@ -180,6 +180,8 @@ struct CustomDateRangeInlineView: View {
                     DatePicker("", selection: $startDate, displayedComponents: .date)
                         .labelsHidden()
                 }
+                
+                Spacer()
 
                 HStack {
                     Text("To")
@@ -191,6 +193,7 @@ struct CustomDateRangeInlineView: View {
                         .labelsHidden()
                 }
             }
+            //.padding()
         }
         .padding(16)
         .background(Color(.systemGray6))

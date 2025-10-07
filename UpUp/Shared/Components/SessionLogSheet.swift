@@ -53,33 +53,18 @@ struct SessionLogSheet: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 0) {
-                SessionLogForm(
-                    selectedDate: $sessionData.selectedDate,
-                    durationHours: $sessionData.durationHours,
-                    selectedMood: $sessionData.selectedMood,
-                    notes: $sessionData.notes,
-                    routes: $sessionData.routes,
-                    selectedEnvironment: $sessionData.selectedEnvironment,
-                    locationText: $sessionData.locationText,
-                    themeColor: themeColor,
-                    moods: moods,
-                    showDatePicker: showDatePicker
-                )
-
-                // Save Button
-                Button(action: saveSession) {
-                    Text(saveButtonTitle)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(canSave ? themeColor : Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(DesignTokens.CornerRadius.small)
-                }
-                .disabled(!canSave)
-                .padding()
-            }
+            SessionLogForm(
+                selectedDate: $sessionData.selectedDate,
+                durationHours: $sessionData.durationHours,
+                selectedMood: $sessionData.selectedMood,
+                notes: $sessionData.notes,
+                routes: $sessionData.routes,
+                selectedEnvironment: $sessionData.selectedEnvironment,
+                locationText: $sessionData.locationText,
+                themeColor: themeColor,
+                moods: moods,
+                showDatePicker: showDatePicker
+            )
             .simultaneousGesture(
                 TapGesture().onEnded {
                     hideKeyboard()
@@ -92,6 +77,14 @@ struct SessionLogSheet: View {
                     Button("Cancel") {
                         dismiss()
                     }
+                }
+
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(saveButtonTitle) {
+                        saveSession()
+                    }
+                    .disabled(!canSave)
+                    .fontWeight(.semibold)
                 }
             }
             .onAppear {
@@ -116,9 +109,9 @@ struct SessionLogSheet: View {
     private var saveButtonTitle: String {
         switch mode {
         case .create, .quickLog:
-            return "Save Session"
+            return "Save"
         case .edit:
-            return "Save Changes"
+            return "Save"
         }
     }
 

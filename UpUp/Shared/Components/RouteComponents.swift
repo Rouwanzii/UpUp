@@ -245,59 +245,7 @@ struct RouteEntryView: View {
                     )
                 }
             }
-
-            // Color (Indoor) or Name (Outdoor)
-            if environment == .indoor {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                    Text("Color")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: DesignTokens.Spacing.small) {
-                            ForEach(RouteColor.allCases, id: \.self) { routeColor in
-                                Button(action: {
-                                    route.color = routeColor
-                                    isRouteNameFocused = false
-                                    dismissKeyboard()
-                                }) {
-                                    VStack(spacing: DesignTokens.Spacing.xxSmall) {
-                                        Circle()
-                                            .fill(routeColor.color)
-                                            .frame(width: 40, height: 40)
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(route.color == routeColor ? Color.blue : Color.clear, lineWidth: 2.5)
-                                            )
-                                            .overlay(
-                                                Circle()
-                                                    .stroke(routeColor == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-                                            )
-                                        Text(routeColor.rawValue)
-                                            .font(.caption2)
-                                            .foregroundColor(route.color == routeColor ? .blue : .secondary)
-                                    }
-                                }
-                            }
-                        }
-                        .padding(.vertical, DesignTokens.Padding.xxSmall)
-                    }
-                }
-            } else {
-                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                    Text("Route Name")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-
-                    TextField("Enter route name", text: $routeNameText)
-                        .textFieldStyle(RoundedBorderTextFieldStyle())
-                        .focused($isRouteNameFocused)
-                        .onChange(of: routeNameText) {
-                            route.name = routeNameText.isEmpty ? nil : routeNameText
-                        }
-                }
-            }
-
+            
             // Result
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
                 Text("Result")
@@ -355,6 +303,59 @@ struct RouteEntryView: View {
                     }
                 }
             }
+            
+            // Color (Indoor) or Name (Outdoor)
+            if environment == .indoor {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
+                    Text("Color")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: DesignTokens.Spacing.small) {
+                            ForEach(RouteColor.allCases, id: \.self) { routeColor in
+                                Button(action: {
+                                    route.color = routeColor
+                                    isRouteNameFocused = false
+                                    dismissKeyboard()
+                                }) {
+                                    VStack(spacing: DesignTokens.Spacing.xxSmall) {
+                                        Circle()
+                                            .fill(routeColor.color)
+                                            .frame(width: 40, height: 40)
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(route.color == routeColor ? Color.blue : Color.clear, lineWidth: 2.5)
+                                            )
+                                            .overlay(
+                                                Circle()
+                                                    .stroke(routeColor == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+                                            )
+                                        Text(routeColor.rawValue)
+                                            .font(.caption2)
+                                            .foregroundColor(route.color == routeColor ? .blue : .secondary)
+                                    }
+                                }
+                            }
+                        }
+                        .padding(.vertical, DesignTokens.Padding.xxSmall)
+                    }
+                }
+            } else {
+                VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
+                    Text("Route Name")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+
+                    TextField("Enter route name", text: $routeNameText)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .focused($isRouteNameFocused)
+                        .onChange(of: routeNameText) {
+                            route.name = routeNameText.isEmpty ? nil : routeNameText
+                        }
+                }
+            }
+
         }
     }
 }
