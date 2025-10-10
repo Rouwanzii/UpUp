@@ -217,22 +217,79 @@ struct ProgressTrendsSection: View {
         return (indoor, outdoor)
     }
 
+    private var bestBoulderingGrade: String {
+        let allBoulderingRoutes = sessions.flatMap { $0.routes }
+            .filter { route in
+                guard let difficulty = route.difficulty else { return false }
+                return difficulty.climbingType == .bouldering &&
+                       (route.result == .onsight || route.result == .flash || route.result == .send)
+            }
+            .compactMap { $0.difficulty }
+
+        guard !allBoulderingRoutes.isEmpty else { return "-" }
+
+        let maxGrade = allBoulderingRoutes.max(by: { a, b in
+            let indexA = RouteDifficulty.boulderingGrades.firstIndex(of: a) ?? 0
+            let indexB = RouteDifficulty.boulderingGrades.firstIndex(of: b) ?? 0
+            return indexA < indexB
+        })
+
+        return maxGrade?.rawValue ?? "-"
+    }
+
+    private var bestSportGrade: String {
+        let allSportRoutes = sessions.flatMap { $0.routes }
+            .filter { route in
+                guard let difficulty = route.difficulty else { return false }
+                return difficulty.climbingType == .sport &&
+                       (route.result == .onsight || route.result == .flash || route.result == .send)
+            }
+            .compactMap { $0.difficulty }
+
+        guard !allSportRoutes.isEmpty else { return "-" }
+
+        let maxGrade = allSportRoutes.max(by: { a, b in
+            let indexA = RouteDifficulty.sportGrades.firstIndex(of: a) ?? 0
+            let indexB = RouteDifficulty.sportGrades.firstIndex(of: b) ?? 0
+            return indexA < indexB
+        })
+
+        return maxGrade?.rawValue ?? "-"
+    }
+
     var body: some View {
         VStack(spacing: 20) {
             InsightSectionHeader(title: "Progress Trends", icon: "chart.line.uptrend.xyaxis")
 
-            // Summary Cards
+            // Summary Cards Row 1
             HStack(spacing: 12) {
                 ProgressIndicatorCard(
                     value: "\(sessions.count)",
                     label: "Sessions",
-                    icon: "figure.climbing",
+                    //icon: "figure.climbing",
                     color: .blue
                 )
                 ProgressIndicatorCard(
-                    value: String(format: "%.1f h", totalDuration),
+                    value: totalDuration.formatAsHours(),
                     label: "Total Time",
-                    icon: "clock.fill",
+                    //icon: "clock.fill",
+                    color: .blue
+                )
+            }
+            .padding(.horizontal, 20)
+
+            // Summary Cards Row 2 - Best Grades
+            HStack(spacing: 12) {
+                ProgressIndicatorCard(
+                    value: bestBoulderingGrade,
+                    label: "Best Boulder",
+                    //icon: "diamond.fill",
+                    color: .orange
+                )
+                ProgressIndicatorCard(
+                    value: bestSportGrade,
+                    label: "Best Sport",
+                    //icon: "mountain.2.fill",
                     color: .green
                 )
             }
@@ -241,11 +298,8 @@ struct ProgressTrendsSection: View {
             // Indoor vs Outdoor Ratio
             if indoorOutdoorRatio.indoor > 0 || indoorOutdoorRatio.outdoor > 0 {
                 InsightCard(title: "Indoor vs Outdoor") {
-                    IndoorOutdoorRatioChart(
-                        indoor: indoorOutdoorRatio.indoor,
-                        outdoor: indoorOutdoorRatio.outdoor
-                    )
-                    .frame(height: 160)
+                    IndoorOutdoorRatioChart(sessions: sessions)
+                        .frame(height: 160)
                 }
             }
             
@@ -311,9 +365,9 @@ struct SessionHighlightsSection: View {
                     HighlightCard(
                         icon: "🧗",
                         title: "Longest Session",
-                        value: String(format: "%.1f hours", Double(session.duration) / 60.0),
+                        value: session.duration.toHours.formatAsHoursLong(),
                         subtitle: session.date?.formatted(date: .abbreviated, time: .omitted) ?? "",
-                        message: "You stayed on the wall for \(String(format: "%.1f", Double(session.duration) / 60.0)) hours — that's some serious dedication!",
+                        message: "You stayed on the wall for \(session.duration.toHours.formatAsHoursLong()) — that's some serious dedication!",
                         session: session
                     )
                 }
@@ -446,20 +500,21 @@ struct InsightCard<Content: View>: View {
 struct ProgressIndicatorCard: View {
     let value: String
     let label: String
-    let icon: String
+    //let icon: String
     let color: Color
 
     var body: some View {
         VStack(spacing: 12) {
+            /*
             Image(systemName: icon)
                 .font(.title2)
                 .foregroundColor(color)
-
+*/
             VStack(spacing: 4) {
                 Text(value)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(color)
 
                 Text(label)
                     .font(.caption)
@@ -505,7 +560,7 @@ struct HighlightCard: View {
     let value: String
     let subtitle: String
     let message: String
-    let session: ClimbingSession
+    @ObservedObject var session: ClimbingSession
 
     var body: some View {
         NavigationLink(destination: SessionDetailView(session: session)) {

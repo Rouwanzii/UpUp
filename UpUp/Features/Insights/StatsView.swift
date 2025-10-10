@@ -225,7 +225,7 @@ struct HalfYearlyHeatmapView: View {
 
 
 struct SessionRowForDate: View {
-    let session: ClimbingSession
+    @ObservedObject var session: ClimbingSession
 
     var body: some View {
         NavigationLink(destination: SessionDetailView(session: session)) {
@@ -234,7 +234,7 @@ struct SessionRowForDate: View {
                     .font(.title2)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("\(session.duration) minutes")
+                    Text(session.duration.toHours.formatAsHoursLong())
                             .font(.headline)
                             .fontWeight(.medium)
 

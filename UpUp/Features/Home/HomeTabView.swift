@@ -227,7 +227,7 @@ struct RecentActivityPreview: View {
 }
 
 struct RecentActivityRow: View {
-    let session: ClimbingSession
+    @ObservedObject var session: ClimbingSession
 
     var body: some View {
         NavigationLink(destination: SessionDetailView(session: session)) {
@@ -241,7 +241,7 @@ struct RecentActivityRow: View {
                         .fontWeight(.semibold)
                         .foregroundColor(.primary)
 
-                    Text("\(session.duration) min • \(session.routes.count) route\(session.routes.count == 1 ? "" : "s")")
+                    Text("\(session.duration.toHours.formatAsHours()) • \(session.routes.count) route\(session.routes.count == 1 ? "" : "s")")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }

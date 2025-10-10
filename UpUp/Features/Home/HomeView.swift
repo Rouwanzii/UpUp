@@ -276,7 +276,7 @@ struct TodayTrainingCard: View {
 // TodayQuickLogView has been replaced by SessionLogSheet
 
 struct HomeSessionRow: View {
-    let session: ClimbingSession
+    @ObservedObject var session: ClimbingSession
     @Environment(\.managedObjectContext) private var viewContext
     @State private var showingDeleteAlert = false
     @State private var showingEditSheet = false
@@ -296,7 +296,7 @@ struct HomeSessionRow: View {
                 // 中间信息
                 VStack(alignment: .leading, spacing: 6) {
                     HStack(){
-                        Text("\(session.duration) minutes")
+                        Text(session.duration.toHours.formatAsHoursLong())
                             .font(.headline)
                             .fontWeight(.semibold)
                         Spacer()

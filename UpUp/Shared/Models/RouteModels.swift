@@ -169,9 +169,11 @@ enum RouteColor: String, CaseIterable, Codable {
 }
 
 // MARK: - Climbing Environment
-enum ClimbingEnvironment: String, CaseIterable, Codable {
+enum ClimbingEnvironment: String, CaseIterable, Codable, Identifiable {
     case indoor = "Indoor"
     case outdoor = "Outdoor"
+
+    var id: String { self.rawValue }
 
     var locationPlaceholder: String {
         switch self {

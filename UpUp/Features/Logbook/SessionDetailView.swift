@@ -20,7 +20,7 @@ struct SessionDetailView: View {
                         Text(formattedDate)
                             .font(.title2)
                             .fontWeight(.bold)
-                        Text("\(Double(session.duration) / 60.0, specifier: "%.1f") hours")
+                        Text(session.duration.toHours.formatAsHoursLong())
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                     }

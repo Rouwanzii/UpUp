@@ -52,14 +52,14 @@ struct MonthlyCalendar: View {
             // Monthly summary
             HStack {
                 VStack(alignment: .leading) {
-                    Text("\(sessionsThisMonth) sessions")
+                    Text("\(sessionsThisMonth) session\(sessionsThisMonth == 1 ? "" : "s")")
                         .font(.headline)
                 }
 
                 Spacer()
 
                 VStack(alignment: .trailing) {
-                    Text(String(format: "%.1f hrs", totalHoursThisMonth))
+                    Text(totalHoursThisMonth.formatAsHours())
                         .font(.headline)
                 }
             }
@@ -191,28 +191,44 @@ struct CalendarDayView: View {
         calendar.isDate(date, equalTo: currentMonth, toGranularity: .month)
     }
 
-    private var hoursForDate: Double {
-        let sessionsForDate = sessions.filter { session in
+    private var sessionsForDate: [ClimbingSession] {
+        sessions.filter { session in
             guard let sessionDate = session.date else { return false }
             return calendar.isDate(sessionDate, inSameDayAs: date)
         }
+    }
 
+    private var hoursForDate: Double {
         let totalMinutes = sessionsForDate.reduce(0) { $0 + Int($1.duration) }
         return Double(totalMinutes) / 60.0
     }
 
+    private var isOutdoorDominant: Bool {
+        let outdoorMinutes = sessionsForDate
+            .filter { $0.environment == .outdoor }
+            .reduce(0) { $0 + Int($1.duration) }
+        let totalMinutes = sessionsForDate.reduce(0) { $0 + Int($1.duration) }
+
+        // If more than 50% of time was outdoor, use green
+        return totalMinutes > 0 && Double(outdoorMinutes) / Double(totalMinutes) > 0.5
+    }
+
     private var intensityColor: Color {
+        let baseColor: Color = isOutdoorDominant ? .green : .blue
+
         switch hoursForDate {
         case 0:
             return Color.clear
         case 0.1..<1:
-            return Color.green.opacity(0.3)
+            return baseColor.opacity(0.3)
         case 1..<2:
-            return Color.green.opacity(0.6)
+            return baseColor.opacity(0.5)
         case 2..<3:
-            return Color.green.opacity(0.8)
+            return baseColor.opacity(0.7)
+        case 3..<4:
+            return baseColor.opacity(0.85)
         default:
-            return Color.green
+            return baseColor
         }
     }
 }

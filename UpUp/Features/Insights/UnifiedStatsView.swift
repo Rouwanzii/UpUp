@@ -71,7 +71,7 @@ struct UnifiedWeeklyStatsView: View {
                 VStack(spacing: 16) {
                     HStack(spacing: 12) {
                         StatCard(value: "\(weekSessions.count)", label: "Sessions", color: .blue)
-                        StatCard(value: String(format: "%.1f h", totalDuration), label: "Duration", color: .green)
+                        StatCard(value: totalDuration.formatAsHours(), label: "Duration", color: .green)
                         StatCard(value: "\(totalCompletedRoutes)", label: "Completed", color: .orange)
                     }
 
@@ -260,7 +260,7 @@ struct UnifiedMonthlyStatsView: View {
             SectionContainer(title: "Monthly Overview") {
                 HStack(spacing: 12) {
                     StatCard(value: "\(monthSessions.count)", label: "Sessions", color: .blue)
-                    StatCard(value: String(format: "%.1f h", totalDuration), label: "Duration", color: .green)
+                    StatCard(value: totalDuration.formatAsHours(), label: "Duration", color: .green)
                     StatCard(value: "\(totalCompletedRoutes)", label: "Completed", color: .orange)
                 }
             }
@@ -436,7 +436,7 @@ struct UnifiedYearlyStatsView: View {
             SectionContainer(title: "Yearly Overview") {
                 HStack(spacing: 12) {
                     StatCard(value: "\(yearSessions.count)", label: "Sessions", color: .blue)
-                    StatCard(value: String(format: "%.0f h", totalDuration), label: "Duration", color: .green)
+                    StatCard(value: totalDuration.formatAsHours(), label: "Duration", color: .green)
                     StatCard(value: "\(totalCompletedRoutes)", label: "Completed", color: .orange)
                 }
             }

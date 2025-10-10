@@ -223,8 +223,16 @@ struct DifficultyDistributionChart: View {
 // MARK: - Indoor vs Outdoor Ratio Chart
 
 struct IndoorOutdoorRatioChart: View {
-    let indoor: Int
-    let outdoor: Int
+    let sessions: [ClimbingSession]
+    @State private var selectedEnvironment: ClimbingEnvironment?
+
+    private var indoor: Int {
+        sessions.filter { $0.environment == .indoor }.count
+    }
+
+    private var outdoor: Int {
+        sessions.filter { $0.environment == .outdoor }.count
+    }
 
     private var total: Int { indoor + outdoor }
     private var indoorPercentage: Double {
@@ -240,50 +248,150 @@ struct IndoorOutdoorRatioChart: View {
         HStack(spacing: 20) {
             // Pie Chart
             ZStack {
+                // Outdoor section (background)
                 Circle()
                     .fill(Color.green.opacity(0.3))
+                    .onTapGesture {
+                        if outdoor > 0 {
+                            selectedEnvironment = .outdoor
+                        }
+                    }
 
+                // Indoor section (foreground)
                 Circle()
                     .trim(from: 0, to: indoorPercentage)
                     .fill(Color.blue)
                     .rotationEffect(.degrees(-90))
+                    .onTapGesture {
+                        if indoor > 0 {
+                            selectedEnvironment = .indoor
+                        }
+                    }
             }
             .frame(width: 120, height: 120)
 
             // Legend
             VStack(alignment: .leading, spacing: 12) {
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(Color.blue)
-                        .frame(width: 12, height: 12)
+                // Indoor
+                Button(action: {
+                    if indoor > 0 {
+                        selectedEnvironment = .indoor
+                    }
+                }) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 12, height: 12)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Indoor")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Text("\(indoor) sessions (\(String(format: "%.0f%%", indoorPercentage * 100)))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Indoor")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                            Text("\(indoor) sessions (\(String(format: "%.0f%%", indoorPercentage * 100)))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
+                .disabled(indoor == 0)
 
-                HStack(spacing: 12) {
-                    Circle()
-                        .fill(Color.green.opacity(0.8))
-                        .frame(width: 12, height: 12)
+                // Outdoor
+                Button(action: {
+                    if outdoor > 0 {
+                        selectedEnvironment = .outdoor
+                    }
+                }) {
+                    HStack(spacing: 12) {
+                        Circle()
+                            .fill(Color.green.opacity(0.8))
+                            .frame(width: 12, height: 12)
 
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text("Outdoor")
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                        Text("\(outdoor) sessions (\(String(format: "%.0f%%", outdoorPercentage * 100)))")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Outdoor")
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.primary)
+                            Text("\(outdoor) sessions (\(String(format: "%.0f%%", outdoorPercentage * 100)))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
+                .disabled(outdoor == 0)
             }
 
             Spacer()
+        }
+        .sheet(item: $selectedEnvironment) { environment in
+            LocationBreakdownSheet(sessions: sessions, environment: environment)
+        }
+    }
+}
+
+// MARK: - Location Breakdown Sheet
+
+struct LocationBreakdownSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    let sessions: [ClimbingSession]
+    let environment: ClimbingEnvironment
+
+    private var filteredSessions: [ClimbingSession] {
+        sessions.filter { $0.environment == environment }
+    }
+
+    private var locationBreakdown: [(location: String, count: Int)] {
+        var locationCounts: [String: Int] = [:]
+
+        for session in filteredSessions {
+            let location = session.location?.isEmpty == false ? session.location! : "Unknown Location"
+            locationCounts[location, default: 0] += 1
+        }
+
+        return locationCounts.map { (location: $0.key, count: $0.value) }
+            .sorted { $0.count > $1.count }
+    }
+
+    var body: some View {
+        NavigationView {
+            List {
+                Section(header: Text("Total: \(filteredSessions.count) sessions")) {
+                    ForEach(locationBreakdown, id: \.location) { item in
+                        HStack {
+                            Image(systemName: environment == .indoor ? "building.2.fill" : "mountain.2.fill")
+                                .foregroundColor(environment == .indoor ? .blue : .green)
+                                .frame(width: 24)
+                                .padding()
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(item.location)
+                                    .font(.body)
+                                    .fontWeight(.medium)
+
+                                Text("\(item.count) session\(item.count == 1 ? "" : "s")")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+
+                            Spacer()
+
+                            Text(String(format: "%.0f%%", Double(item.count) / Double(filteredSessions.count) * 100))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.vertical, 4)
+                    }
+                }
+            }
+            .navigationTitle("\(environment.rawValue) Locations")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                }
+            }
         }
     }
 }
@@ -318,7 +426,7 @@ struct EmptyChartView: View {
             .frame(height: 200)
             .padding()
 
-        IndoorOutdoorRatioChart(indoor: 7, outdoor: 3)
+        IndoorOutdoorRatioChart(sessions: [])
             .frame(height: 160)
             .padding()
     }

@@ -137,3 +137,41 @@ extension View {
             )
     }
 }
+
+// MARK: - Duration Formatting Utilities
+
+extension Double {
+    /// Format duration in hours with conditional decimal formatting
+    /// - Returns: String with "h" suffix, showing decimals only when needed
+    /// - Examples: "1 h", "1.5 h", "2 h", "0.5 h"
+    func formatAsHours() -> String {
+        let rounded = (self * 10).rounded() / 10 // Round to 1 decimal place
+        if rounded.truncatingRemainder(dividingBy: 1) == 0 {
+            // Integer value - no decimal point
+            return String(format: "%.0f h", rounded)
+        } else {
+            // Has decimal - show one decimal place
+            return String(format: "%.1f h", rounded)
+        }
+    }
+
+    /// Format duration in hours with "hours" suffix
+    /// - Returns: String with "hour" or "hours" suffix
+    /// - Examples: "1 hour", "1.5 hours", "2 hours"
+    func formatAsHoursLong() -> String {
+        let rounded = (self * 10).rounded() / 10
+        if rounded.truncatingRemainder(dividingBy: 1) == 0 {
+            let hours = Int(rounded)
+            return hours == 1 ? "\(hours) hour" : "\(hours) hours"
+        } else {
+            return String(format: "%.1f hours", rounded)
+        }
+    }
+}
+
+extension Int32 {
+    /// Convert minutes stored in Core Data to hours as Double
+    var toHours: Double {
+        Double(self) / 60.0
+    }
+}

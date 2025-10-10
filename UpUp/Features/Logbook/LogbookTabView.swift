@@ -93,7 +93,7 @@ struct LogbookTabView: View {
                     ScrollView {
                         LazyVStack(spacing: 24, pinnedViews: [.sectionHeaders]) {
                             ForEach(groupedSessions, id: \.month) { monthGroup in
-                                Section(header: MonthHeader(monthString: monthGroup.month)) {
+                                Section(header: MonthHeader(monthString: monthGroup.month, sessionCount: monthGroup.sessions.count)) {
                                     VStack(spacing: 12) {
                                         ForEach(monthGroup.sessions, id: \.id) { session in
                                             TimelineSessionCard(session: session)
@@ -240,6 +240,7 @@ struct FilterButton: View {
 
 struct MonthHeader: View {
     let monthString: String
+    let sessionCount: Int
 
     var body: some View {
         HStack {
@@ -249,6 +250,10 @@ struct MonthHeader: View {
                 .foregroundColor(.primary)
 
             Spacer()
+
+            Text("\(sessionCount) session\(sessionCount == 1 ? "" : "s")")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
@@ -292,129 +297,137 @@ struct TimelineSessionCard: View {
     }
 
     var body: some View {
-        NavigationLink(destination: SessionDetailView(session: session)) {
-            HStack(spacing: 0) {
-                // Left Timeline Indicator
-                VStack {
-                    Circle()
-                        .fill(Color.blue)
-                        .frame(width: 12, height: 12)
-
-                    Rectangle()
-                        .fill(Color.blue.opacity(0.2))
-                        .frame(width: 2)
-                }
-                .frame(width: 20)
-
-                // Card Content
-                VStack(alignment: .leading, spacing: 8) {
-                    // Date and Mood
-                    HStack {
-                        Text(dateString)
-                            .font(.headline)
-                            .fontWeight(.semibold)
-
-                        Spacer()
-
+            NavigationLink(destination: SessionDetailView(session: session)) {
+                HStack(spacing: 0) {
+                    // Left Timeline Indicator
+                    VStack {
                         Text(session.mood ?? "😊")
-                            .font(.title3)
-                    }
-
-                    // Location
-                    if let environment = session.environment {
-                        HStack(spacing: 6) {
-                            Image(systemName: environment == .indoor ? "building.2.fill" : "mountain.2.fill")
-                                .font(.caption)
-                                .foregroundColor(.blue)
-
-                            if let location = session.location, !location.isEmpty {
-                                Text(location)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            } else {
-                                Text(environment.rawValue)
-                                    .font(.subheadline)
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-
-                    // Stats Row
-                    HStack(spacing: 16) {
-                        // Routes
-                        HStack(spacing: 4) {
-                            Image(systemName: "figure.climbing")
-                                .font(.caption)
-                            Text("\(session.routes.count) route\(session.routes.count == 1 ? "" : "s")")
-                                .font(.caption)
-                        }
-                        .foregroundColor(.secondary)
-
-                        // Highest grade
-                        if highestGrade != "-" {
-                            HStack(spacing: 4) {
-                                Image(systemName: "flag.fill")
-                                    .font(.caption)
-                                Text(highestGrade)
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                            }
-                            .foregroundColor(.orange)
-                        }
-
-                        Spacer()
-
-                        // Duration
-                        Text(String(format: "%.1f h", Double(session.duration) / 60.0))
                             .font(.caption)
-                            .foregroundColor(.secondary)
+
+                        Rectangle()
+                            .fill(Color.gray.opacity(0.2))
+                            .frame(width: 2)
                     }
+                    .frame(width: 20)
+
+                    // Card Content
+                    VStack(alignment: .leading, spacing: 8) {
+                        // Date and Mood
+                        HStack {
+                            Text(dateString)
+                                .font(.headline)
+                                .fontWeight(.semibold)
+
+                            Spacer()
+
+                            
+                            // Location
+                            if let environment = session.environment {
+                                HStack(spacing: 6) {
+                                    Image(systemName: environment == .indoor ? "building.2.fill" : "mountain.2.fill")
+                                        .font(.caption)
+                                        .foregroundColor(environment == .indoor ? .blue:.green)
+
+                                    if let location = session.location, !location.isEmpty {
+                                        Text(location)
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    /*
+                                    else {
+                                        Text(environment.rawValue)
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                     */
+                                }
+                            }
+
+                        }
+
+
+                        // Stats Row
+                        HStack(spacing: 16) {
+                            // Routes
+                            HStack(spacing: 4) {
+                                //Image(systemName: "figure.climbing")
+                                //   .font(.caption)
+                                
+                                // Duration
+                                Text(session.duration.toHours.formatAsHours())
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text("·")
+                                Text("\(session.routes.count) route\(session.routes.count == 1 ? "" : "s")")
+                                    .font(.caption)
+                                // Highest grade
+                                if highestGrade != "-" {
+                                    HStack {
+                                        //Image(systemName: "flag.fill")
+                                        //.font(.caption)
+                                        Text("·")
+                                        Text(highestGrade)
+                                            .font(.caption)
+                                        //.fontWeight(.semibold)
+                                    }
+                                }
+                            }
+                            .foregroundColor(.secondary)
+                            }
+                            //Spacer()
+                        if let notes = session.notes, !notes.isEmpty {
+                            Text(notes)
+                                .font(.caption)
+                                .italic()
+                                .foregroundColor(.secondary)
+                                .lineLimit(1)
+                        }
+                    }
+                    .padding(12)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                    .padding(.leading, 8)
                 }
-                .padding(12)
-                .background(Color(.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
-                .padding(.leading, 8)
             }
-        }
-        .buttonStyle(PlainButtonStyle())
-        .contextMenu {
-            Button {
-                showingEditSheet = true
-            } label: {
-                Label("Edit", systemImage: "pencil")
-            }
+            .buttonStyle(PlainButtonStyle())
+            .contextMenu {
+                Button {
+                    showingEditSheet = true
+                } label: {
+                    Label("Edit", systemImage: "pencil")
+                }
 
-            Button(role: .destructive) {
-                showingDeleteAlert = true
-            } label: {
-                Label("Delete", systemImage: "trash")
+                Button(role: .destructive) {
+                    showingDeleteAlert = true
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                }
+            }
+            .alert("Delete Session", isPresented: $showingDeleteAlert) {
+                Button("Delete", role: .destructive) {
+                    deleteSession()
+                }
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text("Are you sure you want to delete this climbing session?")
+            }
+            .sheet(isPresented: $showingEditSheet) {
+                SessionLogSheet(mode: .edit(session), themeColor: .blue)
             }
         }
-        .alert("Delete Session", isPresented: $showingDeleteAlert) {
-            Button("Delete", role: .destructive) {
-                deleteSession()
-            }
-            Button("Cancel", role: .cancel) { }
-        } message: {
-            Text("Are you sure you want to delete this climbing session?")
-        }
-        .sheet(isPresented: $showingEditSheet) {
-            SessionLogSheet(mode: .edit(session), themeColor: .blue)
-        }
-    }
 
-    private func deleteSession() {
-        withAnimation {
-            viewContext.delete(session)
-            do {
-                try viewContext.save()
-            } catch {
-                print("Error deleting session: \(error)")
+        private func deleteSession() {
+            withAnimation {
+                viewContext.delete(session)
+                do {
+                    try viewContext.save()
+                } catch {
+                    print("Error deleting session: \(error)")
+                }
             }
         }
     }
-}
 
 struct EmptyLogbookView: View {
     var body: some View {

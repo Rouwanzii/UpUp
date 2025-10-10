@@ -65,11 +65,6 @@ struct SessionLogSheet: View {
                 moods: moods,
                 showDatePicker: showDatePicker
             )
-            .simultaneousGesture(
-                TapGesture().onEnded {
-                    hideKeyboard()
-                }
-            )
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -209,10 +204,9 @@ struct SessionData {
         session.environment = selectedEnvironment
         session.location = locationText.isEmpty ? nil : locationText
 
-        // Force Core Data to recognize the change by touching a Core Data property
-        // This triggers @FetchRequest updates even though routes/environment/location use UserDefaults
-        session.willChangeValue(forKey: "duration")
-        session.didChangeValue(forKey: "duration")
+        // Force SwiftUI views to update by triggering objectWillChange
+        // This is necessary because routes/environment/location use UserDefaults
+        session.objectWillChange.send()
     }
 }
 
@@ -348,7 +342,7 @@ struct DurationPicker: View {
                 }
                 .buttonStyle(BorderlessButtonStyle())
 
-                Text("\(durationHours, specifier: "%.1f") h")
+                Text(durationHours.formatAsHours())
                     .font(.body)
                     .frame(width: 60)
 
