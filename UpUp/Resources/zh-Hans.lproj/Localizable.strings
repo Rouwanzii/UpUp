@@ -1,0 +1,200 @@
+/* Tab Bar */
+"tab.home" = "主页";
+"tab.logbook" = "记录";
+"tab.insights" = "数据";
+
+/* Home Tab */
+"home.title" = "主页";
+"home.todayTraining" = "今日训练";
+"home.quickStats" = "数据概览";
+"home.recentActivity" = "最近活动";
+"home.calendar" = "日历";
+"home.noSessions" = "暂无训练记录";
+"home.startLogging" = "开始记录你的攀岩训练吧！";
+
+/* Calendar */
+"Calendar.title" = "日历";
+"Calendar.tomorrow" = "我们还年轻，我们总有明天";
+"Calendar.nosession" = "忘了记录这天的训练吗？";
+"Calendar.quick" = "快速记录";
+"Calendar.today" = "今天爬了吗？";
+
+/* Stats */
+"stats.sessions" = "训练次数";
+"stats.bestBoulder" = "最佳抱石";
+"stats.bestSport" = "最佳运动攀";
+"stats.totalTime" = "总时长";
+
+/* Logbook Tab */
+"logbook.title" = "训练记录";
+"logbook.noSessions" = "暂无训练记录";
+"logbook.startYourJourney" = "今天就开始你的攀岩之旅吧！";
+"logbook.addSession" = "添加训练";
+"logbook.routes" = "条线路";
+"logbook.route" = "条线路";
+
+/* Insights Tab */
+"insights.title" = "数据分析";
+"insights.last7Days" = "最近7天";
+"insights.last30Days" = "最近30天";
+"insights.thisYear" = "今年";
+"insights.custom" = "自定义";
+"insights.customDateRange" = "自定义日期范围";
+"insights.from" = "开始";
+"insights.to" = "结束";
+"insights.clear" = "清除";
+"insights.noClimbs" = "暂无攀登记录";
+"insights.storyStarts" = "你的故事从下次训练开始。";
+"insights.logFirstSession" = "记录第一次训练";
+
+/* Progress Trends */
+"progress.title" = "进步趋势";
+"progress.difficultyProgression" = "难度进展";
+"progress.difficultyDistribution" = "难度分布";
+"progress.indoorVsOutdoor" = "岩馆 vs 野攀";
+
+/* Session Highlights */
+"highlights.title" = "训练亮点";
+"highlights.longestSession" = "最长训练";
+"highlights.mostProductive" = "最高产训练";
+"highlights.personalBest" = "个人最佳";
+"highlights.longestMessage" = "你在岩壁上坚持了 %@ — 真是非常有毅力！";
+"highlights.productiveMessage" = "你一口气完成了 %d 条线路 — 势不可挡！";
+"highlights.bestMessage" = "你攀登过的最难等级 — 进步惊人！";
+
+/* Motivational Insights */
+"motivation.title" = "继续加油";
+"motivation.frequent" = "你最近攀岩更频繁了 — 保持这个势头！";
+"motivation.consistent" = "很好的连续性！坚持练习是进步的关键。";
+"motivation.easyGoing" = "看起来你最近有点放松 — 下一次发送在等着你！";
+"motivation.journey" = "你的攀岩之旅正在成形 — 每次训练都很重要！";
+"motivation.routine" = "你正在建立稳定的训练习惯 — 连续性带来进步！";
+"motivation.beginning" = "你的攀岩故事才刚刚开始 — 让它变得精彩吧！";
+
+/* Motivational Quotes */
+//"quote.1" = "挑战你的极限，最终你将找到极限";
+//"quote.2" = "最好的攀岩者是玩得最开心的那个。";
+//"quote.3" = "不要限制你的挑战，而是挑战你的极限。";
+//"quote.4" = "攀登高山不是为了让世界看到你，而是让你看到世界。";
+//"quote.5" = "糟糕的攀岩日也胜过美好的工作日。";
+
+/* Settings */
+"settings.title" = "设置";
+"settings.appInfo" = "应用信息";
+"settings.version" = "版本";
+"settings.about" = "关于";
+"settings.aboutText" = "LopUp - 你的攀岩训练伙伴";
+"settings.done" = "完成";
+"settings.language" = "语言";
+"settings.languageSelection" = "语言选择";
+
+/* Climbing Types */
+"climbingType.bouldering" = "抱石";
+"climbingType.sport" = "难度";
+"climbingType.trad" = "传统攀登";
+
+/* Environment */
+"environment.indoor" = "岩馆";
+"environment.outdoor" = "野攀";
+
+/* Session Detail */
+"sessionDetail.totalRoutes" = "总线路";
+"sessionDetail.completed" = "已完成";
+"sessionDetail.totalAttempts" = "总尝试次数";
+"sessionDetail.bestBoulder" = "最佳抱石";
+"sessionDetail.bestSport" = "最佳难度";
+"sessionDetail.gradeDistribution" = "难度分布";
+"sessionDetail.BoulderDistribution" = "抱石难度分布";
+"sessionDetail.sportDistribution" = "难度攀难度分布";
+"sessionDetail.avgAttempts" = "平均尝试";
+"sessionDetail.perRoute" = "每条线路";
+"sessionDetail.successRate" = "成功率";
+"sessionDetail.overall" = "总体";
+"sessionDetail.sessionInfo" = "训练信息";
+"sessionDetail.environment" = "环境";
+"sessionDetail.location" = "地点";
+"sessionDetail.routes" = "线路";
+"sessionDetail.notes" = "备注";
+"sessionDetail.deleteSession" = "删除训练";
+"sessionDetail.deleteConfirm" = "确定要删除这次攀岩训练吗？此操作无法撤销。";
+"sessionDetail.edit" = "编辑";
+
+/* Logbook */
+"logbook.search" = "搜索地点、备注、难度...";
+"logbook.filterAll" = "全部";
+"logbook.filterIndoor" = "岩馆";
+"logbook.filterOutdoor" = "野攀";
+"logbook.noSessionsYet" = "暂无训练记录";
+"logbook.startLogging" = "开始记录你的攀岩训练\n追踪你的进步";
+"logbook.sessions" = "次训练";
+"logbook.session" = "次训练";
+"logbook.unknown" = "未知";
+"logbook.firstSend" = "首次完成 %@！";
+"logbook.firstFlash" = "首次闪电 %@！";
+"logbook.firstOnsight" = "首次OS %@！";
+"route.attemptstimes" = "次尝试";
+
+/* Session Log */
+"sessionLog.title" = "记录训练";
+"sessionLog.editTitle" = "编辑训练";
+"sessionLog.quickLogTitle" = "今日快速记录";
+"sessionLog.date" = "日期";
+"sessionLog.sessionDetails" = "训练详情";
+"sessionLog.whereClimb" = "在哪里攀岩？";
+"sessionLog.duration" = "训练时长？";
+"sessionLog.mood" = "感觉如何？";
+"sessionLog.routes" = "线路";
+"sessionLog.notesOptional" = "备注";
+"sessionLog.addRoute" = "添加线路";
+
+/* Route Entry */
+"route.type" = "类型";
+"route.difficulty" = "难度";
+"route.selectDifficulty" = "选择难度";
+"route.attempts" = "尝试次数";
+"route.result" = "结果";
+"route.color" = "颜色";
+"route.routeName" = "线路名称";
+"route.remove" = "移除";
+
+/* Route Results */
+"result.send" = "Send";
+"result.flash" = "Flash";
+"result.onsight" = "Onsight";
+"result.fail" = "Fail";
+
+/* Route Colors */
+"color.red" = "红色";
+"color.orange" = "橙色";
+"color.yellow" = "黄色";
+"color.green" = "绿色";
+"color.blue" = "蓝色";
+"color.purple" = "紫色";
+"color.pink" = "粉色";
+"color.black" = "黑色";
+"color.white" = "白色";
+"color.gray" = "灰色";
+
+/* Time Units */
+"time.hours" = "小时";
+"time.hour" = "小时";
+"time.minutes" = "分钟";
+"time.minute" = "分钟";
+
+/* Today Training Card */
+"today.completed" = "今日训练已完成！";
+"today.greatWork" = "表现很棒，再接再厉！";
+"today.howAreYou" = "今天感觉如何？";
+"today.readyClimbing" = "准备好攀岩了吗？";
+"today.quickLog" = "今日快速记录";
+
+/* Recent Activity */
+"recentActivity.unknown" = "未知";
+
+/* Common */
+"common.cancel" = "取消";
+"common.save" = "保存";
+"common.delete" = "删除";
+"common.edit" = "编辑";
+"common.routes" = "条线路";
+"common.route" = "条线路";

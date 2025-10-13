@@ -69,7 +69,7 @@ struct SessionLogSheet: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Cancel") {
+                    Button("common.cancel".localized) {
                         dismiss()
                     }
                 }
@@ -93,21 +93,16 @@ struct SessionLogSheet: View {
     private var navigationTitle: String {
         switch mode {
         case .create:
-            return "Log Session"
+            return "sessionLog.title".localized
         case .edit:
-            return "Edit Session"
+            return "sessionLog.editTitle".localized
         case .quickLog:
-            return "Quick Log for Today"
+            return "sessionLog.quickLogTitle".localized
         }
     }
 
     private var saveButtonTitle: String {
-        switch mode {
-        case .create, .quickLog:
-            return "Save"
-        case .edit:
-            return "Save"
-        }
+        return "common.save".localized
     }
 
     private var canSave: Bool {
@@ -261,23 +256,23 @@ struct SessionLogForm: View {
             // Date Section (optional)
             if showDatePicker {
                 Section {
-                    DatePicker("Date", selection: $selectedDate, displayedComponents: .date)
+                    DatePicker("sessionLog.date".localized, selection: $selectedDate, displayedComponents: .date)
                         .datePickerStyle(GraphicalDatePickerStyle())
                 }
             }
 
             // Session Details Section
-            Section(header: Text("Session Details")) {
+            Section(header: Text("sessionLog.sessionDetails".localized)) {
                 // Location
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.small) {
                     HStack {
-                        Text("Where did you climb?")
+                        Text("sessionLog.whereClimb".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
                         Spacer()
                         Picker("", selection: $selectedEnvironment) {
                             ForEach(ClimbingEnvironment.allCases, id: \.self) { env in
-                                Text(env.rawValue).tag(env)
+                                Text(env.localizedName).tag(env)
                             }
                         }
                         .pickerStyle(MenuPickerStyle())
@@ -287,6 +282,14 @@ struct SessionLogForm: View {
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .cornerRadius(DesignTokens.CornerRadius.small)
                         .focused($focusedField, equals: .location)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("settings.done".localized) {
+                                    focusedField = nil
+                                }
+                            }
+                        }
                 }
                 .padding(.vertical, DesignTokens.Padding.xxSmall)
 
@@ -300,18 +303,27 @@ struct SessionLogForm: View {
             }
 
             // Routes Section
-            Section(header: Text("Routes")) {
+            Section(header: Text("sessionLog.routes".localized)) {
                 RoutesSection(routes: $routes, environment: selectedEnvironment, dismissKeyboard: { focusedField = nil })
             }
 
             // Notes Section
-            Section(header: Text("Notes (Optional)")) {
+            Section(header: Text("sessionLog.notesOptional".localized)) {
                 TextEditor(text: $notes)
                     .frame(minHeight: 80)
                     .focused($focusedField, equals: .notes)
+                    .toolbar {
+                        ToolbarItemGroup(placement: .keyboard) {
+                            Spacer()
+                            Button("settings.done".localized) {
+                                focusedField = nil
+                            }
+                        }
+                    }
             }
         }
         .scrollDismissesKeyboard(.interactively)
+        .dismissKeyboardInteractively()
     }
 }
 
@@ -324,7 +336,7 @@ struct DurationPicker: View {
 
     var body: some View {
         HStack {
-            Text("How long is your session?")
+            Text("sessionLog.duration".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
             Spacer()
@@ -370,7 +382,7 @@ struct MoodPicker: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.medium) {
-            Text("How do you feel?")
+            Text("sessionLog.mood".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
 

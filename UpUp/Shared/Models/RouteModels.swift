@@ -102,6 +102,15 @@ enum RouteDifficulty: String, CaseIterable, Codable {
 enum ClimbingType: String, CaseIterable, Codable {
     case bouldering = "Bouldering"
     case sport = "Sport Climbing"
+
+    var localizedName: String {
+        switch self {
+        case .bouldering:
+            return "climbingType.bouldering".localized
+        case .sport:
+            return "climbingType.sport".localized
+        }
+    }
 }
 
 // MARK: - Route Result
@@ -174,6 +183,15 @@ enum ClimbingEnvironment: String, CaseIterable, Codable, Identifiable {
     case outdoor = "Outdoor"
 
     var id: String { self.rawValue }
+
+    var localizedName: String {
+        switch self {
+        case .indoor:
+            return "environment.indoor".localized
+        case .outdoor:
+            return "environment.outdoor".localized
+        }
+    }
 
     var locationPlaceholder: String {
         switch self {

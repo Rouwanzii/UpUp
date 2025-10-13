@@ -113,8 +113,12 @@ extension View {
     /// Apply standard card styling
     func cardStyle(cornerRadius: CGFloat = DesignTokens.CornerRadius.medium) -> some View {
         self
-            .background(DesignTokens.Colors.background)
+            .background(DesignTokens.Colors.secondaryBackground)
             .cornerRadius(cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+            )
             .shadow(
                 color: DesignTokens.Shadow.light.color,
                 radius: DesignTokens.Shadow.light.radius,
@@ -127,8 +131,12 @@ extension View {
     func sectionBackground(cornerRadius: CGFloat = DesignTokens.CornerRadius.medium) -> some View {
         self
             .padding()
-            .background(DesignTokens.Colors.background)
+            .background(DesignTokens.Colors.secondaryBackground)
             .cornerRadius(cornerRadius)
+            .overlay(
+                RoundedRectangle(cornerRadius: cornerRadius)
+                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+            )
             .shadow(
                 color: DesignTokens.Shadow.light.color,
                 radius: DesignTokens.Shadow.light.radius,

@@ -221,13 +221,14 @@ struct TodayTrainingCard: View {
                     Text("🎉")
                         .font(.title)
                     VStack(alignment: .leading) {
-                        Text("Session Completed for Today!")
+                        Text("today.completed".localized)
                             .font(.headline)
                             .fontWeight(.semibold)
-                            .padding(.bottom, 2)
-                        Text("Great work on your training!")
+                            .padding(.bottom, 3)
+                        Text("today.greatWork".localized)
                             .font(.subheadline)
                             .foregroundColor(.secondary)
+                            //.padding(.bottom, 4)
                     }
                     Spacer()
                 }
@@ -237,12 +238,14 @@ struct TodayTrainingCard: View {
                         Text(currentEmoji)
                             .font(.title)
                         VStack(alignment: .leading) {
-                            Text("How are you today?")
+                            Text("today.howAreYou".localized)
                                 .font(.headline)
                                 .fontWeight(.semibold)
-                            Text("Ready for some climbing?")
+                                .padding(.bottom, 4)
+                            Text("today.readyClimbing".localized)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
+                                .padding(.bottom, 4)
                         }
                         Spacer()
                     }
@@ -251,11 +254,11 @@ struct TodayTrainingCard: View {
                             currentEmoji = motivationalEmojis.randomElement() ?? motivationalEmojis[0]
                             }
                         }
-                    
+
                     Button(action: onQuickLog) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
-                            Text("Quick Log for Today")
+                            Text("today.quickLog".localized)
                                 .fontWeight(.medium)
                         }
                         .frame(maxWidth: .infinity)
@@ -390,7 +393,7 @@ struct MonthlyCalendarCardContent: View {
                 .frame(width: 50, height: 50)
 
             VStack(alignment: .leading, spacing: 4) {
-                Text("Monthly Calendar")
+                Text("Calendar.title".localized)
                     .font(.headline)
                     .fontWeight(.semibold)
                     .foregroundColor(.primary)
@@ -434,28 +437,36 @@ struct MonthlyCalendarPageView: View {
                             .fontWeight(.semibold)
                         Spacer()
                         if sessionsForSelectedDate.isEmpty {
-                            Button("Quick Log") {
-                                showingQuickLog = true
+                            if selectedDate < Date(){
+                                Button("Calendar.quick".localized) {
+                                    showingQuickLog = true
+                                }
+                                .font(.subheadline)
+                                .fontWeight(.medium)
+                                .foregroundColor(.white)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.orange)
+                                .cornerRadius(8)
                             }
-                            .font(.subheadline)
-                            .fontWeight(.medium)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 6)
-                            .background(Color.orange)
-                            .cornerRadius(8)
                         }
                     }
 
                     if sessionsForSelectedDate.isEmpty {
                         if selectedDate > Date() {
-                            Text("We are young, we still have tomorrow.")
+                            Text("Calendar.tomorrow".localized)
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .italic()
+                                .padding(.vertical, 8)
+                        } else if selectedDate == Date() {
+                            Text("Calendar.today".localized)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .italic()
                                 .padding(.vertical, 8)
                         } else {
-                            Text("No sessions recorded for this day")
+                            Text("Calendar.nosession".localized)
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                                 .padding(.vertical, 8)
@@ -475,7 +486,7 @@ struct MonthlyCalendarPageView: View {
             }
             .padding(.vertical)
         }
-        .navigationTitle("Monthly Calendar")
+        .navigationTitle("Calendar.title".localized)
         .navigationBarTitleDisplayMode(.automatic)
         .sheet(isPresented: $showingQuickLog) {
             SessionLogSheet(mode: .quickLog(selectedDate), themeColor: DesignTokens.Colors.homeAccent, showDatePicker: false)

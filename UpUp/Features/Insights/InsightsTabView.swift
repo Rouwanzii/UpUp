@@ -19,6 +19,19 @@ struct InsightsTabView: View {
         case last30Days = "Last 30 Days"
         case thisYear = "This Year"
         case custom = "Custom"
+
+        var localizedName: String {
+            switch self {
+            case .last7Days:
+                return "insights.last7Days".localized
+            case .last30Days:
+                return "insights.last30Days".localized
+            case .thisYear:
+                return "insights.thisYear".localized
+            case .custom:
+                return "insights.custom".localized
+            }
+        }
     }
 
     var body: some View {
@@ -71,7 +84,7 @@ struct InsightsTabView: View {
                 }
                 .padding(.bottom, 20)
             }
-            .navigationTitle("Insights")
+            .navigationTitle("insights.title".localized)
         }
     }
 
@@ -123,7 +136,7 @@ struct DateRangePicker: View {
                             }
                             selectedRange = range
                         }) {
-                            Text(range == .custom && selectedRange == .custom ? customDateRangeText : range.rawValue)
+                            Text(range == .custom && selectedRange == .custom ? customDateRangeText : range.localizedName)
                                 .font(.subheadline)
                                 .fontWeight(.medium)
                                 .foregroundColor(selectedRange == range ? .white : .primary)
@@ -153,7 +166,7 @@ struct CustomDateRangeInlineView: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack {
-                Text("Custom Date Range")
+                Text("insights.customDateRange".localized)
                     .font(.subheadline)
                     .fontWeight(.semibold)
 
@@ -163,7 +176,7 @@ struct CustomDateRangeInlineView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "xmark.circle.fill")
                             .font(.subheadline)
-                        Text("Clear")
+                        Text("insights.clear".localized)
                             .font(.subheadline)
                     }
                     .foregroundColor(.secondary)
@@ -172,7 +185,7 @@ struct CustomDateRangeInlineView: View {
 
             VStack {
                 HStack {
-                    Text("From")
+                    Text("insights.from".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .frame(width: 50, alignment: .leading)
@@ -180,11 +193,11 @@ struct CustomDateRangeInlineView: View {
                     DatePicker("", selection: $startDate, displayedComponents: .date)
                         .labelsHidden()
                 }
-                
+
                 Spacer()
 
                 HStack {
-                    Text("To")
+                    Text("insights.to".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .frame(width: 50, alignment: .leading)
@@ -259,19 +272,19 @@ struct ProgressTrendsSection: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            InsightSectionHeader(title: "Progress Trends", icon: "chart.line.uptrend.xyaxis")
+            InsightSectionHeader(title: "progress.title".localized, icon: "chart.line.uptrend.xyaxis")
 
             // Summary Cards Row 1
             HStack(spacing: 12) {
                 ProgressIndicatorCard(
                     value: "\(sessions.count)",
-                    label: "Sessions",
+                    label: "stats.sessions".localized,
                     //icon: "figure.climbing",
                     color: .blue
                 )
                 ProgressIndicatorCard(
                     value: totalDuration.formatAsHours(),
-                    label: "Total Time",
+                    label: "stats.totalTime".localized,
                     //icon: "clock.fill",
                     color: .blue
                 )
@@ -282,13 +295,13 @@ struct ProgressTrendsSection: View {
             HStack(spacing: 12) {
                 ProgressIndicatorCard(
                     value: bestBoulderingGrade,
-                    label: "Best Boulder",
+                    label: "stats.bestBoulder".localized,
                     //icon: "diamond.fill",
                     color: .orange
                 )
                 ProgressIndicatorCard(
                     value: bestSportGrade,
-                    label: "Best Sport",
+                    label: "stats.bestSport".localized,
                     //icon: "mountain.2.fill",
                     color: .green
                 )
@@ -297,32 +310,30 @@ struct ProgressTrendsSection: View {
 
             // Indoor vs Outdoor Ratio
             if indoorOutdoorRatio.indoor > 0 || indoorOutdoorRatio.outdoor > 0 {
-                InsightCard(title: "Indoor vs Outdoor") {
+                InsightCard(title: "progress.indoorVsOutdoor".localized) {
                     IndoorOutdoorRatioChart(sessions: sessions)
                         .frame(height: 160)
                 }
             }
-            
+
             // Climbing Type Selector
             ClimbingTypeSelector(selectedType: $selectedClimbingType)
                 .padding(.horizontal, 20)
 
             // Difficulty Progression Chart
-            InsightCard(title: "Difficulty Progression") {
+            InsightCard(title: "progress.difficultyProgression".localized) {
                 DifficultyProgressionChart(
                     sessions: sessions,
                     climbingType: selectedClimbingType
                 )
-                .frame(height: 200)
             }
 
             // Difficulty Distribution Chart
-            InsightCard(title: "Difficulty Distribution") {
+            InsightCard(title: "progress.difficultyDistribution".localized) {
                 DifficultyDistributionChart(
                     sessions: sessions,
                     climbingType: selectedClimbingType
                 )
-                .frame(height: 200)
             }
         }
     }
@@ -358,27 +369,28 @@ struct SessionHighlightsSection: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            InsightSectionHeader(title: "Session Highlights", icon: "star.fill")
+            InsightSectionHeader(title: "highlights.title".localized, icon: "star.fill")
 
             VStack(spacing: 12) {
                 if let session = longestSession {
                     HighlightCard(
                         icon: "🧗",
-                        title: "Longest Session",
+                        title: "highlights.longestSession".localized,
                         value: session.duration.toHours.formatAsHoursLong(),
                         subtitle: session.date?.formatted(date: .abbreviated, time: .omitted) ?? "",
-                        message: "You stayed on the wall for \(session.duration.toHours.formatAsHoursLong()) — that's some serious dedication!",
+                        message: String(format: "highlights.longestMessage".localized, session.duration.toHours.formatAsHoursLong()),
                         session: session
                     )
                 }
 
                 if let session = mostProductiveSession {
+                    let routesText = "\(session.routes.count) " + (session.routes.count == 1 ? "logbook.route".localized : "logbook.routes".localized)
                     HighlightCard(
                         icon: "⚡",
-                        title: "Most Productive Session",
-                        value: "\(session.routes.count) routes",
+                        title: "highlights.mostProductive".localized,
+                        value: routesText,
                         subtitle: session.date?.formatted(date: .abbreviated, time: .omitted) ?? "",
-                        message: "You crushed \(session.routes.count) routes in one go — unstoppable!",
+                        message: String(format: "highlights.productiveMessage".localized, session.routes.count),
                         session: session
                     )
                 }
@@ -386,9 +398,9 @@ struct SessionHighlightsSection: View {
                 if let grade = personalBest {
                     PersonalBestCard(
                         icon: "🏅",
-                        title: "Personal Best",
+                        title: "highlights.personalBest".localized,
                         value: grade.rawValue,
-                        message: "Your hardest grade climbed — amazing progress!"
+                        message: "highlights.bestMessage".localized
                     )
                 }
             }
@@ -408,17 +420,17 @@ struct MotivationalInsightsSection: View {
 
         // Frequency insight
         if sessions.count >= 10 {
-            messages.append("You've been climbing more often lately — keep up the momentum!")
+            messages.append("motivation.frequent".localized)
         } else if sessions.count >= 5 {
-            messages.append("Nice consistency! Regular practice is the key to progress.")
+            messages.append("motivation.consistent".localized)
         } else if sessions.count <= 2 {
-            messages.append("Looks like you've been taking it easy — your next send is waiting!")
+            messages.append("motivation.easyGoing".localized)
         }
 
         // Grade progression insight
         let allGrades = sessions.flatMap { $0.routes }.compactMap { $0.difficulty }
         if !allGrades.isEmpty {
-            messages.append("Your climbing journey is taking shape — every session counts!")
+            messages.append("motivation.journey".localized)
         }
 
         // Consistency insight
@@ -429,15 +441,15 @@ struct MotivationalInsightsSection: View {
         })
 
         if uniqueWeeks.count >= 3 {
-            messages.append("You're building a solid routine — consistency breeds improvement!")
+            messages.append("motivation.routine".localized)
         }
 
-        return messages.isEmpty ? ["Your climbing story is just beginning — make it epic!"] : messages
+        return messages.isEmpty ? ["motivation.beginning".localized] : messages
     }
 
     var body: some View {
         VStack(spacing: 20) {
-            InsightSectionHeader(title: "Keep Going", icon: "flame.fill")
+            InsightSectionHeader(title: "motivation.title".localized, icon: "flame.fill")
 
             VStack(spacing: 12) {
                 ForEach(Array(insights.prefix(3).enumerated()), id: \.offset) { index, message in
@@ -489,9 +501,13 @@ struct InsightCard<Content: View>: View {
 
             content
                 .padding(16)
-                .background(Color(.systemBackground))
-                .cornerRadius(12)
-                .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+                .background(Color(.secondarySystemBackground))
+                .cornerRadius(16)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                )
+                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                 .padding(.horizontal, 20)
         }
     }
@@ -505,11 +521,7 @@ struct ProgressIndicatorCard: View {
 
     var body: some View {
         VStack(spacing: 12) {
-            /*
-            Image(systemName: icon)
-                .font(.title2)
-                .foregroundColor(color)
-*/
+ 
             VStack(spacing: 4) {
                 Text(value)
                     .font(.title2)
@@ -523,8 +535,12 @@ struct ProgressIndicatorCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(Color(.systemBackground))
+        .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+        )
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
@@ -540,7 +556,7 @@ struct ClimbingTypeSelector: View {
                         selectedType = type
                     }
                 }) {
-                    Text(type.rawValue)
+                    Text(type.localizedName)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .foregroundColor(selectedType == type ? .white : .primary)
@@ -597,8 +613,12 @@ struct HighlightCard: View {
                     .lineLimit(2)
             }
             .padding(16)
-            .background(Color(.systemBackground))
+            .background(Color(.secondarySystemBackground))
             .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+            )
             .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
@@ -637,8 +657,12 @@ struct PersonalBestCard: View {
                 .lineLimit(2)
         }
         .padding(16)
-        .background(Color(.systemBackground))
+        .background(Color(.secondarySystemBackground))
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+        )
         .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
@@ -673,6 +697,11 @@ struct MotivationalCard: View {
         .padding(16)
         .background(gradient)
         .cornerRadius(12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+        )
+        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -683,17 +712,17 @@ struct EmptyInsightsView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.secondary)
 
-            Text("No climbs yet")
+            Text("insights.noClimbs".localized)
                 .font(.title3)
                 .fontWeight(.semibold)
 
-            Text("Your story starts with the next session.")
+            Text("insights.storyStarts".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
 
             NavigationLink(destination: LogbookTabView()) {
-                Text("Log Your First Session")
+                Text("insights.logFirstSession".localized)
                     .font(.headline)
                     .foregroundColor(.white)
                     .padding(.horizontal, 24)

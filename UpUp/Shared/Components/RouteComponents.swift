@@ -9,28 +9,60 @@ struct RouteDetailCard: View {
 
     var body: some View {
         HStack(spacing: DesignTokens.Spacing.large) {
-            // Result Indicator
-            if let result = route.result {
-                Circle()
-                    .fill(resultColor(result))
-                    .frame(width: 12, height: 12)
-            }
-
+            
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
                 // Route header
                 HStack {
-                    Text("Route \(index + 1)")
-                        .font(.headline)
+                    Text("\("sessionLog.routes".localized) \(index + 1)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
+                    Spacer()
+
+                    // Attempts
+                    if let attempts = route.attempts {
+                        Text("\(attempts) \("route.attemptstimes".localized)")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                HStack{
+                    //difficulty
                     if let difficulty = route.difficulty {
                         Text(difficulty.rawValue)
                             .font(.subheadline)
                             .fontWeight(.semibold)
                             .foregroundColor(.blue)
                     }
-
+                    
+                    // Color or Name
+                    if environment == .indoor {
+                        if let color = route.color {
+                            HStack(spacing: DesignTokens.Spacing.xSmall) {
+                                /*
+                                Circle()
+                                    .fill(color.color)
+                                    .frame(width: 16, height: 16)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(color == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
+                                    )
+                                 */
+                                Text(color.rawValue)
+                                    .font(.caption)
+                                    .foregroundColor(color.color)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    } else {
+                        if let name = route.name, !name.isEmpty {
+                            Text(name)
+                                .font(.caption)
+                                .foregroundColor(.primary)
+                        }
+                    }
+                    
                     Spacer()
-
                     if let result = route.result {
                         HStack(spacing: DesignTokens.Spacing.xxSmall) {
                             Text(result.emoji)
@@ -41,40 +73,10 @@ struct RouteDetailCard: View {
                         }
                     }
                 }
-
-                // Color or Name
-                if environment == .indoor {
-                    if let color = route.color {
-                        HStack(spacing: DesignTokens.Spacing.xSmall) {
-                            Circle()
-                                .fill(color.color)
-                                .frame(width: 16, height: 16)
-                                .overlay(
-                                    Circle()
-                                        .stroke(color == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
-                                )
-                            Text(color.rawValue)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                } else {
-                    if let name = route.name, !name.isEmpty {
-                        Text(name)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
-
-                // Attempts
-                if let attempts = route.attempts {
-                    Text("\(attempts) attempt\(attempts == 1 ? "" : "s")")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
             }
         }
         .padding()
+        .padding(.horizontal)
         .cardStyle(cornerRadius: DesignTokens.CornerRadius.medium)
     }
 
@@ -100,7 +102,7 @@ struct RoutesSection: View {
             ForEach(Array(routes.enumerated()), id: \.element.id) { index, route in
                 VStack(alignment: .leading, spacing: 0) {
                     HStack {
-                        Text("Route \(index + 1)")
+                        Text("\("sessionLog.routes".localized) \(index + 1)")
                             .font(.headline)
                             .foregroundColor(.primary)
                         Spacer()
@@ -144,7 +146,7 @@ struct RoutesSection: View {
                 HStack {
                     Image(systemName: "plus.circle.fill")
                         .font(.body)
-                    Text("Add Route")
+                    Text("sessionLog.addRoute".localized)
                         .fontWeight(.semibold)
                 }
                 .frame(maxWidth: .infinity)
@@ -201,12 +203,12 @@ struct RouteEntryView: View {
         VStack(alignment: .leading, spacing: DesignTokens.Spacing.large) {
             // Climbing Type
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                Text("Type")
+                Text("route.type")
                     .font(.subheadline)
                     .foregroundColor(.secondary)
                 Picker("Climbing Type", selection: $selectedClimbingType) {
                     ForEach(ClimbingType.allCases, id: \.self) { type in
-                        Text(type.rawValue).tag(type)
+                        Text(type.localizedName).tag(type)
                     }
                 }
                 .pickerStyle(SegmentedPickerStyle())
@@ -219,7 +221,7 @@ struct RouteEntryView: View {
 
             // Difficulty
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                Text("Difficulty")
+                Text("route.difficulty".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
@@ -248,7 +250,7 @@ struct RouteEntryView: View {
             
             // Result
             VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                Text("Result")
+                Text("route.result".localized)
                     .font(.subheadline)
                     .foregroundColor(.secondary)
 
@@ -264,7 +266,7 @@ struct RouteEntryView: View {
                                     .font(.subheadline)
                                     .padding(.vertical, DesignTokens.Padding.small)
                                     .padding(.horizontal, DesignTokens.Padding.large)
-                                    .background(route.result == result ? Color.blue : Color(.systemGray5))
+                                    .background(route.result == result ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
                                     .foregroundColor(route.result == result ? .white : .primary)
                                     .cornerRadius(DesignTokens.CornerRadius.extraLarge)
                             }
@@ -277,7 +279,7 @@ struct RouteEntryView: View {
             // Attempts
             if route.result == .send || route.result == .fail {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                    Text("Attempts")
+                    Text("route.attempts".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
@@ -293,7 +295,7 @@ struct RouteEntryView: View {
                                         .font(.subheadline)
                                         .padding(.vertical, DesignTokens.Padding.small)
                                         .padding(.horizontal, DesignTokens.Padding.large)
-                                        .background(route.attempts == attempt ? Color.blue : Color(.systemGray5))
+                                        .background(route.attempts == attempt ? Color.blue.opacity(0.2) : Color.gray.opacity(0.1))
                                         .foregroundColor(route.attempts == attempt ? .white : .primary)
                                         .cornerRadius(DesignTokens.CornerRadius.extraLarge)
                                 }
@@ -307,7 +309,7 @@ struct RouteEntryView: View {
             // Color (Indoor) or Name (Outdoor)
             if environment == .indoor {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                    Text("Color")
+                    Text("route.color".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
@@ -331,7 +333,7 @@ struct RouteEntryView: View {
                                                 Circle()
                                                     .stroke(routeColor == .white ? Color.gray.opacity(0.3) : Color.clear, lineWidth: 1)
                                             )
-                                        Text(routeColor.rawValue)
+                                        Text(("color." + routeColor.rawValue.lowercased()).localized)
                                             .font(.caption2)
                                             .foregroundColor(route.color == routeColor ? .blue : .secondary)
                                     }
@@ -343,13 +345,22 @@ struct RouteEntryView: View {
                 }
             } else {
                 VStack(alignment: .leading, spacing: DesignTokens.Spacing.xSmall) {
-                    Text("Route Name")
+                    Text("route.routeName".localized)
                         .font(.subheadline)
                         .foregroundColor(.secondary)
 
-                    TextField("Enter route name", text: $routeNameText)
+                    TextField("route.routeName".localized, text: $routeNameText)
                         .textFieldStyle(RoundedBorderTextFieldStyle())
                         .focused($isRouteNameFocused)
+                        .toolbar {
+                            ToolbarItemGroup(placement: .keyboard) {
+                                Spacer()
+                                Button("settings.done".localized) {
+                                    isRouteNameFocused = false
+                                    dismissKeyboard()
+                                }
+                            }
+                        }
                         .onChange(of: routeNameText) {
                             route.name = routeNameText.isEmpty ? nil : routeNameText
                         }

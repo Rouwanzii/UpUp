@@ -19,12 +19,19 @@ struct LogbookTabView: View {
         case outdoor = "Outdoor"
     }
 
-    // Shared date formatter - created once and reused
-    private let monthFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM yyyy"
-        return formatter
-    }()
+    // Month formatter - uses localized date formatting
+    private var monthFormatter: DateFormatter {
+        LocalizationManager.shared.localizedDateFormatter(dateStyle: .long)
+    }
+
+    private func monthString(from date: Date) -> String {
+        date.localizedFormatCustom("MMMM yyyy")
+    }
+
+    // Convert sessions to array once for performance
+    private var allSessionsArray: [ClimbingSession] {
+        Array(sessions)
+    }
 
     var body: some View {
         NavigationStack {
@@ -34,7 +41,7 @@ struct LogbookTabView: View {
                     Image(systemName: "magnifyingglass")
                         .foregroundColor(.secondary)
 
-                    TextField("Search location, notes, grade...", text: $searchText)
+                    TextField("logbook.search".localized, text: $searchText)
                         .textFieldStyle(PlainTextFieldStyle())
                         .focused($isSearchFocused)
                         .submitLabel(.search)
@@ -96,7 +103,7 @@ struct LogbookTabView: View {
                                 Section(header: MonthHeader(monthString: monthGroup.month, sessionCount: monthGroup.sessions.count)) {
                                     VStack(spacing: 12) {
                                         ForEach(monthGroup.sessions, id: \.id) { session in
-                                            TimelineSessionCard(session: session)
+                                            TimelineSessionCard(session: session, allSessions: allSessionsArray)
                                         }
                                     }
                                     .padding(.horizontal, 20)
@@ -104,6 +111,9 @@ struct LogbookTabView: View {
                             }
                         }
                         .padding(.vertical, 16)
+                    }
+                    .onTapGesture {
+                        isSearchFocused = false
                     }
                     .scrollDismissesKeyboard(.interactively)
                     .simultaneousGesture(
@@ -120,10 +130,13 @@ struct LogbookTabView: View {
                         isSearchFocused = false
                     }
             )
-            .navigationTitle("Logbook")
+            .navigationTitle("tab.logbook".localized)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(action: { showingLogView = true }) {
+                    Button(action: {
+                        isSearchFocused = false
+                        showingLogView = true
+                    }) {
                         Image(systemName: "plus.circle.fill")
                             .font(.title3)
                             .foregroundColor(.blue)
@@ -197,7 +210,7 @@ struct LogbookTabView: View {
 
         for session in filteredSessions {
             guard let date = session.date else { continue }
-            let monthKey = monthFormatter.string(from: date)
+            let monthKey = monthString(from: date)
 
             if grouped[monthKey] == nil {
                 grouped[monthKey] = []
@@ -205,15 +218,17 @@ struct LogbookTabView: View {
             grouped[monthKey]?.append(session)
         }
 
-        // Sort by month (most recent first)
-        return grouped.map { (month: $0.key, sessions: $0.value) }
-            .sorted { (group1, group2) -> Bool in
-                guard let date1 = monthFormatter.date(from: group1.month),
-                      let date2 = monthFormatter.date(from: group2.month) else {
-                    return false
-                }
-                return date1 > date2
+        // Sort by month (most recent first) using the original dates
+        var groupedWithDates: [(month: String, sessions: [ClimbingSession], date: Date)] = []
+        for (month, sessions) in grouped {
+            if let firstDate = sessions.first?.date {
+                groupedWithDates.append((month: month, sessions: sessions, date: firstDate))
             }
+        }
+
+        return groupedWithDates
+            .sorted { $0.date > $1.date }
+            .map { (month: $0.month, sessions: $0.sessions) }
     }
 }
 
@@ -251,7 +266,7 @@ struct MonthHeader: View {
 
             Spacer()
 
-            Text("\(sessionCount) session\(sessionCount == 1 ? "" : "s")")
+            Text("\(sessionCount) \(sessionCount == 1 ? "logbook.session".localized : "logbook.sessions".localized)")
                 .font(.subheadline)
                 .foregroundColor(.secondary)
         }
@@ -263,37 +278,77 @@ struct MonthHeader: View {
 
 struct TimelineSessionCard: View {
     @ObservedObject var session: ClimbingSession
+    let allSessions: [ClimbingSession]
     @Environment(\.managedObjectContext) private var viewContext
     @State private var showingDeleteAlert = false
     @State private var showingEditSheet = false
 
-    // Shared date formatter
-    private static let dateFormatter: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEE, MMM d"
-        return formatter
-    }()
-
     private var dateString: String {
-        guard let date = session.date else { return "Unknown" }
-        return Self.dateFormatter.string(from: date)
+        guard let date = session.date else { return "logbook.unknown".localized }
+        return date.localizedFormatCustom("EEE, MMM d")
     }
 
-    private var highestGrade: String {
-        let completed = session.routes.filter {
-            $0.result == .onsight || $0.result == .flash || $0.result == .send
-        }.compactMap { $0.difficulty }
+    private var totalAttempts: Int {
+        session.routes.reduce(0) { total, route in
+            // If attempts are explicitly logged, use that
+            if let attempts = route.attempts {
+                return total + attempts
+            }
+            // Otherwise, onsight and flash implicitly mean 1 attempt
+            else if route.result == .onsight || route.result == .flash {
+                return total + 1
+            }
+            // For other results without logged attempts, don't count
+            return total
+        }
+    }
 
-        guard !completed.isEmpty else { return "-" }
+    private var milestone: (grade: String, result: RouteResult)? {
+        guard let sessionDate = session.date else { return nil }
 
-        let allGrades = RouteDifficulty.boulderingGrades + RouteDifficulty.sportGrades
-        guard let maxGrade = completed.max(by: { a, b in
-            let indexA = allGrades.firstIndex(of: a) ?? 0
-            let indexB = allGrades.firstIndex(of: b) ?? 0
-            return indexA < indexB
-        }) else { return "-" }
+        // Get all completed routes in this session
+        let completedRoutes = session.routes.compactMap { route -> (difficulty: RouteDifficulty, result: RouteResult)? in
+            guard let difficulty = route.difficulty,
+                  let result = route.result,
+                  result == .onsight || result == .flash || result == .send else { return nil }
+            return (difficulty, result)
+        }
 
-        return maxGrade.rawValue
+        guard !completedRoutes.isEmpty else { return nil }
+
+        // Build a set of all previous completions for faster lookup
+        var previousCompletions: Set<String> = []
+        for otherSession in allSessions {
+            guard let otherDate = otherSession.date, otherDate < sessionDate else { continue }
+
+            for route in otherSession.routes {
+                guard let difficulty = route.difficulty, let result = route.result else { continue }
+
+                switch result {
+                case .onsight:
+                    previousCompletions.insert("\(difficulty.rawValue)-onsight")
+                    previousCompletions.insert("\(difficulty.rawValue)-flash")
+                    previousCompletions.insert("\(difficulty.rawValue)-send")
+                case .flash:
+                    previousCompletions.insert("\(difficulty.rawValue)-flash")
+                    previousCompletions.insert("\(difficulty.rawValue)-send")
+                case .send:
+                    previousCompletions.insert("\(difficulty.rawValue)-send")
+                case .fail:
+                    break
+                }
+            }
+        }
+
+        // Check each completed route for a milestone
+        for (difficulty, result) in completedRoutes {
+            let key = "\(difficulty.rawValue)-\(result.rawValue.lowercased())"
+            if !previousCompletions.contains(key) {
+                return (difficulty.rawValue, result)
+            }
+        }
+
+        return nil
     }
 
     var body: some View {
@@ -315,12 +370,12 @@ struct TimelineSessionCard: View {
                         // Date and Mood
                         HStack {
                             Text(dateString)
-                                .font(.headline)
+                                .font(.subheadline)
                                 .fontWeight(.semibold)
 
                             Spacer()
 
-                            
+
                             // Location
                             if let environment = session.environment {
                                 HStack(spacing: 6) {
@@ -333,16 +388,25 @@ struct TimelineSessionCard: View {
                                             .font(.caption)
                                             .foregroundColor(.secondary)
                                     }
-                                    /*
-                                    else {
-                                        Text(environment.rawValue)
-                                            .font(.subheadline)
-                                            .foregroundColor(.secondary)
-                                    }
-                                     */
                                 }
                             }
 
+                        }
+
+                        // Milestone Badge
+                        if let milestone = milestone {
+                            HStack(spacing: 4) {
+                                Text("🎉")
+                                    .font(.caption)
+                                Text(milestoneText(for: milestone))
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.orange)
+                            }
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Color.orange.opacity(0.15))
+                            .cornerRadius(6)
                         }
 
 
@@ -350,25 +414,18 @@ struct TimelineSessionCard: View {
                         HStack(spacing: 16) {
                             // Routes
                             HStack(spacing: 4) {
-                                //Image(systemName: "figure.climbing")
-                                //   .font(.caption)
-                                
-                                // Duration
                                 Text(session.duration.toHours.formatAsHours())
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 Text("·")
-                                Text("\(session.routes.count) route\(session.routes.count == 1 ? "" : "s")")
+                                Text("\(session.routes.count) \(session.routes.count == 1 ? "logbook.route".localized : "logbook.routes".localized)")
                                     .font(.caption)
-                                // Highest grade
-                                if highestGrade != "-" {
+                                // Total attempts
+                                if totalAttempts > 0 {
                                     HStack {
-                                        //Image(systemName: "flag.fill")
-                                        //.font(.caption)
                                         Text("·")
-                                        Text(highestGrade)
+                                        Text("\(totalAttempts) \("route.attemptstimes".localized)")
                                             .font(.caption)
-                                        //.fontWeight(.semibold)
                                     }
                                 }
                             }
@@ -384,8 +441,12 @@ struct TimelineSessionCard: View {
                         }
                     }
                     .padding(12)
-                    .background(Color(.systemBackground))
+                    .background(Color(.secondarySystemBackground))
                     .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                    )
                     .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                     .padding(.leading, 8)
                 }
@@ -395,25 +456,38 @@ struct TimelineSessionCard: View {
                 Button {
                     showingEditSheet = true
                 } label: {
-                    Label("Edit", systemImage: "pencil")
+                    Label("common.edit".localized, systemImage: "pencil")
                 }
 
                 Button(role: .destructive) {
                     showingDeleteAlert = true
                 } label: {
-                    Label("Delete", systemImage: "trash")
+                    Label("common.delete".localized, systemImage: "trash")
                 }
             }
-            .alert("Delete Session", isPresented: $showingDeleteAlert) {
-                Button("Delete", role: .destructive) {
+            .alert("sessionDetail.deleteSession".localized, isPresented: $showingDeleteAlert) {
+                Button("common.delete".localized, role: .destructive) {
                     deleteSession()
                 }
-                Button("Cancel", role: .cancel) { }
+                Button("common.cancel".localized, role: .cancel) { }
             } message: {
-                Text("Are you sure you want to delete this climbing session?")
+                Text("sessionDetail.deleteConfirm".localized)
             }
             .sheet(isPresented: $showingEditSheet) {
                 SessionLogSheet(mode: .edit(session), themeColor: .blue)
+            }
+        }
+
+        private func milestoneText(for milestone: (grade: String, result: RouteResult)) -> String {
+            switch milestone.result {
+            case .send:
+                return String(format: "logbook.firstSend".localized, milestone.grade)
+            case .flash:
+                return String(format: "logbook.firstFlash".localized, milestone.grade)
+            case .onsight:
+                return String(format: "logbook.firstOnsight".localized, milestone.grade)
+            case .fail:
+                return ""
             }
         }
 
@@ -436,11 +510,11 @@ struct EmptyLogbookView: View {
                 .font(.system(size: 64))
                 .foregroundColor(.secondary)
 
-            Text("No Sessions Yet")
+            Text("logbook.noSessionsYet".localized)
                 .font(.title3)
                 .fontWeight(.semibold)
 
-            Text("Start logging your climbing sessions\nto track your progress")
+            Text("logbook.startLogging".localized)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)

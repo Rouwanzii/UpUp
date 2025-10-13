@@ -1,0 +1,201 @@
+/* Tab Bar */
+"tab.home" = "Home";
+"tab.logbook" = "Logbook";
+"tab.insights" = "Insights";
+
+/* Home Tab */
+"home.title" = "Home";
+"home.todayTraining" = "Today's Training";
+"home.quickStats" = "Quick Stats";
+"home.recentActivity" = "Recent Activity";
+"home.calendar" = "Calendar";
+"home.noSessions" = "No sessions yet";
+"home.startLogging" = "Start logging your climbing sessions!";
+
+/* Calendar */
+"Calendar.title" = "Monthly Calendar";
+"Calendar.tomorrow" = "We are young, we still have tomorrow.";
+"Calendar.nosession" = "No sessions recorded for this day";
+"Calendar.quick" = "Quick Log";
+"Calendar.today" = "How are you today?";
+
+
+/* Stats */
+"stats.sessions" = "Sessions";
+"stats.bestBoulder" = "Best Boulder";
+"stats.bestSport" = "Best Sport";
+"stats.totalTime" = "Total Time";
+
+/* Logbook Tab */
+"logbook.title" = "Logbook";
+"logbook.noSessions" = "No sessions logged yet";
+"logbook.startYourJourney" = "Start your climbing journey today!";
+"logbook.addSession" = "Add Session";
+"logbook.routes" = "routes";
+"logbook.route" = "route";
+
+/* Insights Tab */
+"insights.title" = "Insights";
+"insights.last7Days" = "Last 7 Days";
+"insights.last30Days" = "Last 30 Days";
+"insights.thisYear" = "This Year";
+"insights.custom" = "Custom";
+"insights.customDateRange" = "Custom Date Range";
+"insights.from" = "From";
+"insights.to" = "To";
+"insights.clear" = "Clear";
+"insights.noClimbs" = "No climbs yet";
+"insights.storyStarts" = "Your story starts with the next session.";
+"insights.logFirstSession" = "Log Your First Session";
+
+/* Progress Trends */
+"progress.title" = "Progress Trends";
+"progress.difficultyProgression" = "Difficulty Progression";
+"progress.difficultyDistribution" = "Difficulty Distribution";
+"progress.indoorVsOutdoor" = "Indoor vs Outdoor";
+
+/* Session Highlights */
+"highlights.title" = "Session Highlights";
+"highlights.longestSession" = "Longest Session";
+"highlights.mostProductive" = "Most Productive Session";
+"highlights.personalBest" = "Personal Best";
+"highlights.longestMessage" = "You stayed on the wall for %@ — that's some serious dedication!";
+"highlights.productiveMessage" = "You crushed %d routes in one go — unstoppable!";
+"highlights.bestMessage" = "Your hardest grade climbed — amazing progress!";
+
+/* Motivational Insights */
+"motivation.title" = "Keep Going";
+"motivation.frequent" = "You've been climbing more often lately — keep up the momentum!";
+"motivation.consistent" = "Nice consistency! Regular practice is the key to progress.";
+"motivation.easyGoing" = "Looks like you've been taking it easy — your next send is waiting!";
+"motivation.journey" = "Your climbing journey is taking shape — every session counts!";
+"motivation.routine" = "You're building a solid routine — consistency breeds improvement!";
+"motivation.beginning" = "Your climbing story is just beginning — make it epic!";
+
+/* Motivational Quotes */
+"quote.1" = "Every mountain top is within reach if you just keep climbing.";
+"quote.2" = "The best climber is the one having the most fun.";
+"quote.3" = "Don't limit your challenges, challenge your limits.";
+"quote.4" = "Climb mountains not so the world can see you, but so you can see the world.";
+"quote.5" = "Even a bad day of climbing is better than a good day at work.";
+
+/* Settings */
+"settings.title" = "Settings";
+"settings.appInfo" = "App Info";
+"settings.version" = "Version";
+"settings.about" = "About";
+"settings.aboutText" = "UpUp - Your climbing training companion";
+"settings.done" = "Done";
+"settings.language" = "Language";
+"settings.languageSelection" = "Language Selection";
+
+/* Climbing Types */
+"climbingType.bouldering" = "Bouldering";
+"climbingType.sport" = "Sport";
+"climbingType.trad" = "Trad";
+
+/* Environment */
+"environment.indoor" = "Indoor";
+"environment.outdoor" = "Outdoor";
+
+/* Session Detail */
+"sessionDetail.totalRoutes" = "Total Routes";
+"sessionDetail.completed" = "Completed";
+"sessionDetail.totalAttempts" = "Total Attempts";
+"sessionDetail.bestBoulder" = "Best Boulder";
+"sessionDetail.bestSport" = "Best Sport";
+"sessionDetail.gradeDistribution" = "Grade Distribution";
+"sessionDetail.BoulderDistribution" = "Boulder Distribution";
+"sessionDetail.sportDistribution" = "Sport Distribution";
+"sessionDetail.avgAttempts" = "Avg Attempts";
+"sessionDetail.perRoute" = "per route";
+"sessionDetail.successRate" = "Success Rate";
+"sessionDetail.overall" = "overall";
+"sessionDetail.sessionInfo" = "Session Info";
+"sessionDetail.environment" = "Environment";
+"sessionDetail.location" = "Location";
+"sessionDetail.routes" = "Routes";
+"sessionDetail.notes" = "Notes";
+"sessionDetail.deleteSession" = "Delete Session";
+"sessionDetail.deleteConfirm" = "Are you sure you want to delete this climbing session? This action cannot be undone.";
+"sessionDetail.edit" = "Edit";
+
+/* Logbook */
+"logbook.search" = "Search location, notes, grade...";
+"logbook.filterAll" = "All";
+"logbook.filterIndoor" = "Indoor";
+"logbook.filterOutdoor" = "Outdoor";
+"logbook.noSessionsYet" = "No Sessions Yet";
+"logbook.startLogging" = "Start logging your climbing sessions\nto track your progress";
+"logbook.sessions" = "sessions";
+"logbook.session" = "session";
+"logbook.unknown" = "Unknown";
+"logbook.firstSend" = "First %@ Send!";
+"logbook.firstFlash" = "First %@ Flash!";
+"logbook.firstOnsight" = "First %@ Onsight!";
+"route.attemptstimes" = "attemps";
+
+/* Session Log */
+"sessionLog.title" = "Log Session";
+"sessionLog.editTitle" = "Edit Session";
+"sessionLog.quickLogTitle" = "Quick Log for Today";
+"sessionLog.date" = "Date";
+"sessionLog.sessionDetails" = "Session Details";
+"sessionLog.whereClimb" = "Where did you climb?";
+"sessionLog.duration" = "How long is your session?";
+"sessionLog.mood" = "How are you feeling?";
+"sessionLog.routes" = "Routes";
+"sessionLog.notesOptional" = "Notes";
+"sessionLog.addRoute" = "Add Route";
+
+/* Route Entry */
+"route.type" = "Type";
+"route.difficulty" = "Difficulty";
+"route.selectDifficulty" = "Select difficulty";
+"route.attempts" = "Attempts";
+"route.result" = "Result";
+"route.color" = "Color";
+"route.routeName" = "Route name";
+"route.remove" = "Remove";
+
+/* Route Results */
+"result.send" = "Send";
+"result.flash" = "Flash";
+"result.onsight" = "Onsight";
+"result.fail" = "Fail";
+
+/* Route Colors */
+"color.red" = "Red";
+"color.orange" = "Orange";
+"color.yellow" = "Yellow";
+"color.green" = "Green";
+"color.blue" = "Blue";
+"color.purple" = "Purple";
+"color.pink" = "Pink";
+"color.black" = "Black";
+"color.white" = "White";
+"color.gray" = "Gray";
+
+/* Time Units */
+"time.hours" = "hrs";
+"time.hour" = "hr";
+"time.minutes" = "mins";
+"time.minute" = "min";
+
+/* Today Training Card */
+"today.completed" = "Session Completed for Today!";
+"today.greatWork" = "Great work on your training!";
+"today.howAreYou" = "How are you today?";
+"today.readyClimbing" = "Ready for some climbing?";
+"today.quickLog" = "Quick Log for Today";
+
+/* Recent Activity */
+"recentActivity.unknown" = "Unknown";
+
+/* Common */
+"common.cancel" = "Cancel";
+"common.save" = "Save";
+"common.delete" = "Delete";
+"common.edit" = "Edit";
+"common.routes" = "routes";
+"common.route" = "route";

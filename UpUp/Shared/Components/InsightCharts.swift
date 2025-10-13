@@ -72,6 +72,16 @@ struct DifficultyProgressionChart: View {
         return data
     }
 
+    private var uniqueGrades: Int {
+        Set(progressionData.map { $0.grade }).count
+    }
+
+    private var chartHeight: CGFloat {
+        let heightPerGrade: CGFloat = 40
+        let minHeight: CGFloat = 120
+        return max(CGFloat(uniqueGrades) * heightPerGrade, minHeight)
+    }
+
     var body: some View {
         if #available(iOS 16.0, *) {
             if progressionData.isEmpty {
@@ -93,6 +103,7 @@ struct DifficultyProgressionChart: View {
                         .foregroundStyle(by: .value("Type", item.type))
                     }
                 }
+                .frame(maxWidth: .infinity, minHeight: chartHeight, maxHeight: chartHeight)
                 .chartForegroundStyleScale([
                     "Send": Color.orange,
                     "Flash": Color.blue,
@@ -118,6 +129,21 @@ struct DifficultyProgressionChart: View {
                             }
                         }
                     }
+                }
+                .chartLegend(position: .bottom, spacing: 16) {
+                    HStack(spacing: 16) {
+                        ForEach(["Send", "Flash", "Onsight"], id: \.self) { type in
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(type == "Send" ? Color.orange : type == "Flash" ? Color.blue : Color.green)
+                                    .frame(width: 8, height: 8)
+                                Text(type)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                    .padding(.top, 8)
                 }
                 .padding(.top, 8)
             }
@@ -173,43 +199,69 @@ struct DifficultyDistributionChart: View {
         }
     }
 
+    private var uniqueGrades: Int {
+        Set(distributionData.map { $0.grade }).count
+    }
+
+    private var chartHeight: CGFloat {
+        let heightPerGrade: CGFloat = 50
+        let minHeight: CGFloat = 100
+        return max(CGFloat(uniqueGrades) * heightPerGrade, minHeight)
+    }
+
     var body: some View {
         if #available(iOS 16.0, *) {
             if distributionData.isEmpty {
                 EmptyChartView(message: "No \(climbingType.rawValue.lowercased()) data yet")
             } else {
-                Chart {
-                    ForEach(Array(distributionData.enumerated()), id: \.offset) { index, item in
-                        BarMark(
-                            x: .value("Count", item.count),
-                            y: .value("Grade", item.grade)
-                        )
-                        .foregroundStyle(by: .value("Result", item.result))
-                        .cornerRadius(4)
+                VStack(alignment: .leading, spacing: 8) {
+                    Chart {
+                        ForEach(Array(distributionData.enumerated()), id: \.offset) { index, item in
+                            BarMark(
+                                x: .value("Count", item.count),
+                                y: .value("Grade", item.grade)
+                            )
+                            .foregroundStyle(by: .value("Result", item.result))
+                            .cornerRadius(4)
+                            .annotation(position: .trailing, alignment: .leading) {
+                                Text("\(item.count)")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
                     }
-                }
-                
-                .chartForegroundStyleScale([
-                    "Onsight": Color.green,
-                    "Flash": Color.blue,
-                    "Send": Color.orange,
-                    "Fail": Color.gray.opacity(0.2)
-                ])
-    
-                .chartXAxis {
-                    AxisMarks(position: .bottom) { value in
-                        AxisGridLine()
-                        AxisValueLabel()
-                            .font(.caption2)
+                    .frame(maxWidth: .infinity, minHeight: chartHeight, maxHeight: chartHeight)
+                    .chartForegroundStyleScale([
+                        "Onsight": Color.green,
+                        "Flash": Color.blue,
+                        "Send": Color.orange,
+                        "Fail": Color.gray.opacity(0.2)
+                    ])
+                    .chartXAxis {
+                        AxisMarks(position: .bottom) { value in
+                            AxisGridLine()
+                            AxisValueLabel()
+                                .font(.caption2)
+                        }
                     }
-                }
-                .chartYAxis {
-                    AxisMarks(position: .leading) { value in
-                        AxisValueLabel()
-                            .font(.caption2)
+                    .chartYAxis {
+                        AxisMarks(position: .leading) { value in
+                            AxisValueLabel()
+                                .font(.caption2)
+                        }
                     }
+                    //.padding(.bottom)
+                    .chartLegend(position: .bottom, spacing: 10)
+
+                    // X-axis label
+                    /*
+                    Text("Route Counts")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 4)
+                     */
                 }
-                .padding(.top, 8)
             }
         } else {
             Text("Requires iOS 16+")
