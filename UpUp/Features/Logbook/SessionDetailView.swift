@@ -114,13 +114,10 @@ struct SessionDetailView: View {
                             climbingType: .bouldering
                         )
                         .padding()
-                        .background(Color(.secondarySystemBackground))
-                        .cornerRadius(16)
-                        .overlay(
+                        .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                                .fill(Color(.secondarySystemBackground))
                         )
-                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                         .padding(.horizontal)
                         .opacity(animateCharts ? 1 : 0)
                         .offset(y: animateCharts ? 0 : 20)
@@ -138,13 +135,10 @@ struct SessionDetailView: View {
                             climbingType: .sport
                         )
                         .padding()
-                        .background(Color(.secondarySystemBackground))
-                        .cornerRadius(16)
-                        .overlay(
+                        .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                                .fill(Color(.secondarySystemBackground))
                         )
-                        .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                         .padding(.horizontal)
                         .opacity(animateCharts ? 1 : 0)
                         .offset(y: animateCharts ? 0 : 20)
@@ -179,13 +173,10 @@ struct SessionDetailView: View {
                             .foregroundColor(.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
-                            .background(Color(.secondarySystemBackground))
-                            .cornerRadius(16)
-                            .overlay(
+                            .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                                    .fill(Color(.secondarySystemBackground))
                             )
-                            .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                             .padding(.horizontal)
                     }
                 }
@@ -213,7 +204,7 @@ struct SessionDetailView: View {
             }
             .padding(.vertical)
         }
-        .background(Color(.systemGroupedBackground))
+        .background(Color(.systemBackground))
         .navigationTitle(formattedDate)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

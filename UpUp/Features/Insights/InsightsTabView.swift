@@ -84,6 +84,7 @@ struct InsightsTabView: View {
                 }
                 .padding(.bottom, 20)
             }
+            .background(Color(.systemBackground))
             .navigationTitle("insights.title".localized)
         }
     }
@@ -209,8 +210,10 @@ struct CustomDateRangeInlineView: View {
             //.padding()
         }
         .padding(16)
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
     }
 }
 
@@ -501,13 +504,10 @@ struct InsightCard<Content: View>: View {
 
             content
                 .padding(16)
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(16)
-                .overlay(
+                .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                        .fill(Color(.secondarySystemBackground))
                 )
-                .shadow(color: Color.black.opacity(0.05), radius: 8, x: 0, y: 2)
                 .padding(.horizontal, 20)
         }
     }
@@ -535,13 +535,10 @@ struct ProgressIndicatorCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 20)
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
-        .overlay(
+        .background(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                .fill(Color(.secondarySystemBackground))
         )
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -613,13 +610,10 @@ struct HighlightCard: View {
                     .lineLimit(2)
             }
             .padding(16)
-            .background(Color(.secondarySystemBackground))
-            .cornerRadius(12)
-            .overlay(
+            .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                    .fill(Color(.secondarySystemBackground))
             )
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -657,13 +651,10 @@ struct PersonalBestCard: View {
                 .lineLimit(2)
         }
         .padding(16)
-        .background(Color(.secondarySystemBackground))
-        .cornerRadius(12)
-        .overlay(
+        .background(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                .fill(Color(.secondarySystemGroupedBackground))
         )
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 
@@ -695,13 +686,10 @@ struct MotivationalCard: View {
             Spacer()
         }
         .padding(16)
-        .background(gradient)
-        .cornerRadius(12)
-        .overlay(
+        .background(
             RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                .fill(gradient)
         )
-        .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
     }
 }
 

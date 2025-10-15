@@ -10,8 +10,8 @@ struct LaunchScreenView: View {
             // Background gradient
             LinearGradient(
                 gradient: Gradient(colors: [
-                    Color(red: 1, green: 0.9, blue: 0.8),
-                    Color(red: 0.88, green: 0.97, blue: 1)
+                    Color(red: 1, green: 0.99, blue: 0.98),
+                    Color(red: 0.98, green: 0.97, blue: 1)
                 ]),
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
@@ -29,17 +29,6 @@ struct LaunchScreenView: View {
                     .scaleEffect(scale)
                     .opacity(opacity)
 
-                // App Name
-                Text("LogUp")
-                    .font(.system(size: 42, weight: .bold))
-                    .foregroundColor(.blue.opacity(0.9))
-                    .opacity(opacity)
-
-                // Tagline
-                Text("Track Your Climbing Journey")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.blue.opacity(0.9))
-                    .opacity(opacity)
             }
         }
         .onAppear {

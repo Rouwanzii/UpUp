@@ -105,8 +105,10 @@ struct HomeTabView: View {
                             .padding(.vertical, 20)
                     }
                     .frame(maxWidth: .infinity)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color(.secondarySystemBackground))
+                    )
                     .padding(.horizontal, 20)
                     .padding(.top, 10)
 
@@ -131,6 +133,7 @@ struct HomeTabView: View {
                 }
                 .padding(.bottom, 20)
             }
+            .background(Color(.systemBackground))
             .navigationTitle("home.title".localized)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -283,8 +286,10 @@ struct RecentActivityPreview: View {
                 }
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 32)
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .background(
+                    RoundedRectangle(cornerRadius: 12)
+                        .fill(Color(.secondarySystemBackground))
+                )
             } else {
                 VStack(spacing: 8) {
                     ForEach(sessions, id: \.id) { session in
@@ -334,9 +339,10 @@ struct RecentActivityRow: View {
                     .foregroundColor(.secondary)
             }
             .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color(.secondarySystemBackground))
+            )
         }
         .buttonStyle(PlainButtonStyle())
     }

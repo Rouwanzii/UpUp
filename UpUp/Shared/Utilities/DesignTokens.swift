@@ -110,38 +110,24 @@ enum DesignTokens {
 // MARK: - View Extensions for Design Tokens
 
 extension View {
-    /// Apply standard card styling
-    func cardStyle(cornerRadius: CGFloat = DesignTokens.CornerRadius.medium) -> some View {
+    /// Apply standard card styling with flat appearance
+    /// Cards use secondarySystemBackground to create visual separation from systemBackground page background
+    func cardStyle(cornerRadius: CGFloat = DesignTokens.CornerRadius.large) -> some View {
         self
-            .background(DesignTokens.Colors.secondaryBackground)
-            .cornerRadius(cornerRadius)
-            .overlay(
+            .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-            )
-            .shadow(
-                color: DesignTokens.Shadow.light.color,
-                radius: DesignTokens.Shadow.light.radius,
-                x: DesignTokens.Shadow.light.x,
-                y: DesignTokens.Shadow.light.y
+                    .fill(DesignTokens.Colors.secondaryBackground)
             )
     }
 
-    /// Apply standard section background
-    func sectionBackground(cornerRadius: CGFloat = DesignTokens.CornerRadius.medium) -> some View {
+    /// Apply standard section background with flat appearance
+    /// Sections use secondarySystemBackground for cards on systemBackground pages
+    func sectionBackground(cornerRadius: CGFloat = DesignTokens.CornerRadius.large) -> some View {
         self
             .padding()
-            .background(DesignTokens.Colors.secondaryBackground)
-            .cornerRadius(cornerRadius)
-            .overlay(
+            .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
-            )
-            .shadow(
-                color: DesignTokens.Shadow.light.color,
-                radius: DesignTokens.Shadow.light.radius,
-                x: DesignTokens.Shadow.light.x,
-                y: DesignTokens.Shadow.light.y
+                    .fill(DesignTokens.Colors.secondaryBackground)
             )
     }
 }

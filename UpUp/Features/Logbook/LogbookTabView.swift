@@ -60,8 +60,10 @@ struct LogbookTabView: View {
                     }
                 }
                 .padding(10)
-                .background(Color(.systemGray6))
-                .cornerRadius(10)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color(.secondarySystemBackground))
+                )
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
                 .padding(.bottom, 8)
@@ -272,7 +274,7 @@ struct MonthHeader: View {
         }
         .padding(.horizontal, 20)
         .padding(.vertical, 8)
-        .background(Color(.systemGroupedBackground))
+        .background(Color(.systemBackground))
     }
 }
 
@@ -441,13 +443,10 @@ struct TimelineSessionCard: View {
                         }
                     }
                     .padding(12)
-                    .background(Color(.secondarySystemBackground))
-                    .cornerRadius(12)
-                    .overlay(
+                    .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.primary.opacity(0.1), lineWidth: 0.5)
+                            .fill(Color(.secondarySystemBackground))
                     )
-                    .shadow(color: Color.black.opacity(0.05), radius: 4, x: 0, y: 2)
                     .padding(.leading, 8)
                 }
             }
