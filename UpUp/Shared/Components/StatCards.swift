@@ -10,7 +10,8 @@ struct SessionStatCard: View {
     var body: some View {
         VStack(spacing: DesignTokens.Spacing.small) {
             Text(value)
-                .font(.system(size: 32, weight: .bold, design: .rounded))
+                .font(.title2)
+                .fontWeight(.bold)
                 .foregroundColor(color)
 
             Text(label)
@@ -19,7 +20,7 @@ struct SessionStatCard: View {
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, DesignTokens.Padding.xLarge)
+        .padding(.vertical, DesignTokens.Padding.small)
         .cardStyle(cornerRadius: DesignTokens.CornerRadius.large)
     }
 }

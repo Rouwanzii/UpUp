@@ -102,7 +102,7 @@ struct HomeTabView: View {
                             .italic()
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 20)
-                            .padding(.vertical, 20)
+                            .padding(.vertical, 10)
                     }
                     .frame(maxWidth: .infinity)
                     //.padding(.horizontal, 10)
@@ -283,8 +283,9 @@ struct RecentActivityPreview: View {
                 .padding(.vertical, 32)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.tertiarySystemBackground))
+                        .fill(DesignTokens.CardGradient.lightGrey)
                 )
+                //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
             } else {
                 VStack(spacing: 8) {
                     ForEach(sessions, id: \.id) { session in
@@ -336,8 +337,9 @@ struct RecentActivityRow: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.tertiarySystemBackground))
+                    .fill(DesignTokens.CardGradient.lightGrey)
             )
+            //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
     }

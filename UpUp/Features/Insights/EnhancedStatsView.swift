@@ -519,8 +519,9 @@ struct SectionContainer<Content: View>: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.tertiarySystemBackground))
+                        .fill(DesignTokens.CardGradient.lightGrey)
                 )
+                //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                 .padding(.horizontal, 20)
         }
     }

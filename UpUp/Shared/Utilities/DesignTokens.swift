@@ -105,30 +105,89 @@ enum DesignTokens {
         static let standard = SwiftUI.Animation.easeInOut(duration: 0.3)
         static let slow = SwiftUI.Animation.easeOut(duration: 0.6)
     }
+
+    // MARK: - Card Gradients (Waterllama-inspired)
+    enum CardGradient {
+        static let bluePurple = LinearGradient(
+            colors: [Color.blue.opacity(0.08), Color.purple.opacity(0.06)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        static let pinkOrange = LinearGradient(
+            colors: [Color.pink.opacity(0.07), Color.orange.opacity(0.06)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        static let greenBlue = LinearGradient(
+            colors: [Color.green.opacity(0.07), Color.blue.opacity(0.06)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        static let lightGrey = LinearGradient(
+            colors: [Color.gray.opacity(0.05), Color.gray.opacity(0.05)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        static let orangeYellow = LinearGradient(
+            colors: [Color.orange.opacity(0.07), Color.yellow.opacity(0.05)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+
+        static let darkGrey = LinearGradient(
+            colors: [Color.gray.opacity(0.08), Color.gray.opacity(0.08)],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
 }
 
 // MARK: - View Extensions for Design Tokens
 
 extension View {
-    /// Apply standard card styling with flat appearance
-    /// Cards use tertiarySystemBackground for a subtle, light appearance
+    /// Apply standard card styling with Waterllama-inspired gradient backgrounds
+    /// Each card gets a subtle, random gradient for visual interest
     func cardStyle(cornerRadius: CGFloat = DesignTokens.CornerRadius.large) -> some View {
         self
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(DesignTokens.Colors.tertiaryBackground)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.gray.opacity(0.00),
+                                Color.gray.opacity(0.00)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             )
+            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 
-    /// Apply standard section background with flat appearance
-    /// Sections use tertiarySystemBackground for a subtle, light appearance
+    /// Apply standard section background with Waterllama-inspired gradient
+    /// Sections use subtle gradient for a modern, colorful appearance
     func sectionBackground(cornerRadius: CGFloat = DesignTokens.CornerRadius.large) -> some View {
         self
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(DesignTokens.Colors.tertiaryBackground)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color.blue.opacity(0.08),
+                                Color.purple.opacity(0.06)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
             )
+            .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 

@@ -506,8 +506,9 @@ struct InsightCard<Content: View>: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(.tertiarySystemBackground))
+                        .fill(DesignTokens.CardGradient.darkGrey)
                 )
+                //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                 .padding(.horizontal, 20)
         }
     }
@@ -537,8 +538,9 @@ struct ProgressIndicatorCard: View {
         .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.tertiarySystemBackground))
+                .fill(DesignTokens.CardGradient.darkGrey)
         )
+        //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -612,8 +614,9 @@ struct HighlightCard: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.tertiarySystemBackground))
+                    .fill(DesignTokens.CardGradient.pinkOrange)
             )
+            //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
         }
         .buttonStyle(PlainButtonStyle())
     }
@@ -653,8 +656,9 @@ struct PersonalBestCard: View {
         .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemGroupedBackground))
+                .fill(DesignTokens.CardGradient.pinkOrange)
         )
+        //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 
@@ -690,6 +694,7 @@ struct MotivationalCard: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(gradient)
         )
+        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
     }
 }
 

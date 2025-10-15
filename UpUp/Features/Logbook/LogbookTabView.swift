@@ -62,8 +62,9 @@ struct LogbookTabView: View {
                 .padding(10)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
-                        .fill(Color(.tertiarySystemBackground))
+                        .fill(Color(.secondarySystemBackground))
                 )
+                //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
                 .padding(.bottom, 8)
@@ -445,8 +446,9 @@ struct TimelineSessionCard: View {
                     .padding(12)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.tertiarySystemBackground))
+                            .fill(DesignTokens.CardGradient.lightGrey)
                     )
+                    //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                     .padding(.leading, 8)
                 }
             }

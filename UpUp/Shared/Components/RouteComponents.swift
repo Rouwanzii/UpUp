@@ -77,7 +77,11 @@ struct RouteDetailCard: View {
         }
         .padding()
         .padding(.horizontal)
-        .cardStyle(cornerRadius: DesignTokens.CornerRadius.medium)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(DesignTokens.CardGradient.lightGrey)
+        )
+        //.cardStyle(cornerRadius: DesignTokens.CornerRadius.medium)
     }
 
     private func resultColor(_ result: RouteResult) -> Color {

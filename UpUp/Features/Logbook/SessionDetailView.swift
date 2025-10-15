@@ -45,7 +45,7 @@ struct SessionDetailView: View {
                 .padding(.top, 8)
 
                 // Summary Stats Cards - Row 1
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     SessionStatCard(
                         value: "\(session.routes.count)",
                         label: "sessionDetail.totalRoutes".localized,
@@ -67,7 +67,7 @@ struct SessionDetailView: View {
                 .padding(.horizontal)
 
                 // Summary Stats Cards - Row 2
-                HStack(spacing: 12) {
+                HStack(spacing: 8) {
                     SessionStatCard(
                         value: bestBoulderingGrade,
                         label: "sessionDetail.bestBoulder".localized,
@@ -116,8 +116,9 @@ struct SessionDetailView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.tertiarySystemBackground))
+                                .fill(DesignTokens.CardGradient.orangeYellow)
                         )
+                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                         .padding(.horizontal)
                         .opacity(animateCharts ? 1 : 0)
                         .offset(y: animateCharts ? 0 : 20)
@@ -137,8 +138,9 @@ struct SessionDetailView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.tertiarySystemBackground))
+                                .fill(DesignTokens.CardGradient.orangeYellow)
                         )
+                        .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                         .padding(.horizontal)
                         .opacity(animateCharts ? 1 : 0)
                         .offset(y: animateCharts ? 0 : 20)
@@ -175,8 +177,9 @@ struct SessionDetailView: View {
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(.tertiarySystemBackground))
+                                    .fill(DesignTokens.CardGradient.lightGrey)
                             )
+                            //.shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 2)
                             .padding(.horizontal)
                     }
                 }
