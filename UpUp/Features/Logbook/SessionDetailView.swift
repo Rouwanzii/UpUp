@@ -116,7 +116,7 @@ struct SessionDetailView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.secondarySystemBackground))
+                                .fill(Color(.tertiarySystemBackground))
                         )
                         .padding(.horizontal)
                         .opacity(animateCharts ? 1 : 0)
@@ -137,7 +137,7 @@ struct SessionDetailView: View {
                         .padding()
                         .background(
                             RoundedRectangle(cornerRadius: 16)
-                                .fill(Color(.secondarySystemBackground))
+                                .fill(Color(.tertiarySystemBackground))
                         )
                         .padding(.horizontal)
                         .opacity(animateCharts ? 1 : 0)
@@ -175,7 +175,7 @@ struct SessionDetailView: View {
                             .padding()
                             .background(
                                 RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color(.secondarySystemBackground))
+                                    .fill(Color(.tertiarySystemBackground))
                             )
                             .padding(.horizontal)
                     }

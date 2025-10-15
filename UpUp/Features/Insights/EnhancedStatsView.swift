@@ -519,7 +519,7 @@ struct SectionContainer<Content: View>: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.secondarySystemBackground))
+                        .fill(Color(.tertiarySystemBackground))
                 )
                 .padding(.horizontal, 20)
         }

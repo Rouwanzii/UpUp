@@ -105,12 +105,7 @@ struct HomeTabView: View {
                             .padding(.vertical, 20)
                     }
                     .frame(maxWidth: .infinity)
-                    .background(
-                        RoundedRectangle(cornerRadius: 12)
-                            .fill(Color(.secondarySystemBackground))
-                    )
-                    .padding(.horizontal, 20)
-                    .padding(.top, 10)
+                    //.padding(.horizontal, 10)
 
                     // Today's Training Status
                     TodayTrainingCard(
@@ -288,7 +283,7 @@ struct RecentActivityPreview: View {
                 .padding(.vertical, 32)
                 .background(
                     RoundedRectangle(cornerRadius: 12)
-                        .fill(Color(.secondarySystemBackground))
+                        .fill(Color(.tertiarySystemBackground))
                 )
             } else {
                 VStack(spacing: 8) {
@@ -341,7 +336,7 @@ struct RecentActivityRow: View {
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(Color(.tertiarySystemBackground))
             )
         }
         .buttonStyle(PlainButtonStyle())

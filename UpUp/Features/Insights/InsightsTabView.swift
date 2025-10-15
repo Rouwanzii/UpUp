@@ -506,7 +506,7 @@ struct InsightCard<Content: View>: View {
                 .padding(16)
                 .background(
                     RoundedRectangle(cornerRadius: 16)
-                        .fill(Color(.secondarySystemBackground))
+                        .fill(Color(.tertiarySystemBackground))
                 )
                 .padding(.horizontal, 20)
         }
@@ -537,7 +537,7 @@ struct ProgressIndicatorCard: View {
         .padding(.vertical, 20)
         .background(
             RoundedRectangle(cornerRadius: 12)
-                .fill(Color(.secondarySystemBackground))
+                .fill(Color(.tertiarySystemBackground))
         )
     }
 }
@@ -612,7 +612,7 @@ struct HighlightCard: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color(.secondarySystemBackground))
+                    .fill(Color(.tertiarySystemBackground))
             )
         }
         .buttonStyle(PlainButtonStyle())

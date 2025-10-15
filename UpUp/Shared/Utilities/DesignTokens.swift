@@ -111,23 +111,23 @@ enum DesignTokens {
 
 extension View {
     /// Apply standard card styling with flat appearance
-    /// Cards use secondarySystemBackground to create visual separation from systemBackground page background
+    /// Cards use tertiarySystemBackground for a subtle, light appearance
     func cardStyle(cornerRadius: CGFloat = DesignTokens.CornerRadius.large) -> some View {
         self
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(DesignTokens.Colors.secondaryBackground)
+                    .fill(DesignTokens.Colors.tertiaryBackground)
             )
     }
 
     /// Apply standard section background with flat appearance
-    /// Sections use secondarySystemBackground for cards on systemBackground pages
+    /// Sections use tertiarySystemBackground for a subtle, light appearance
     func sectionBackground(cornerRadius: CGFloat = DesignTokens.CornerRadius.large) -> some View {
         self
             .padding()
             .background(
                 RoundedRectangle(cornerRadius: cornerRadius)
-                    .fill(DesignTokens.Colors.secondaryBackground)
+                    .fill(DesignTokens.Colors.tertiaryBackground)
             )
     }
 }
